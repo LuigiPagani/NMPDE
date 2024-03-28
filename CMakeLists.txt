@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.12.0)
+project(elliptic LANGUAGES CXX C)
+
+# Set the path to the Boost library
+set(Boost_DIR "/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/boost/1.76.0/lib/cmake/Boost-1.76.0")
+
+# Set the path to the deal.II library
+set(DEAL_II_DIR "/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.3.1/lib/cmake/deal.II")
+
+include(common/cmake-common.cmake)
+
+add_executable(elliptic src_elliptic/elliptic_main.cpp src_elliptic/Elliptic.cpp)
+deal_ii_setup_target(elliptic)
+
+add_executable(elliptic_1D src_elliptic_1D/elliptic_main.cpp src_elliptic_1D/Elliptic.cpp)
+deal_ii_setup_target(elliptic_1D)
+
+add_executable(parabolic src_parabolic_neumann/parabolic_main.cpp src_parabolic_neumann/Parabolic.cpp)
+deal_ii_setup_target(parabolic)
+
+add_executable(stokes src_stokes/stokes_main.cpp src_stokes/Stokes.cpp)
+deal_ii_setup_target(stokes)
+
+add_executable(domain_decomposition src_domain_decomposition/domain_decomposition_main.cpp src_domain_decomposition/Poisson2D.cpp)
+deal_ii_setup_target(domain_decomposition)
