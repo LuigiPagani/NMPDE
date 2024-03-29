@@ -23,3 +23,6 @@ deal_ii_setup_target(stokes)
 
 add_executable(domain_decomposition src_domain_decomposition/domain_decomposition_main.cpp src_domain_decomposition/Poisson2D.cpp)
 deal_ii_setup_target(domain_decomposition)
+
+add_executable(linear_elasticity src_linear_elasticity/linear_elasticity_main.cpp src_linear_elasticity/LinearElasticity.cpp)
+deal_ii_setup_target(linear_elasticity)
