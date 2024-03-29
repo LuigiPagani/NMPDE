@@ -344,3 +344,5 @@ TSWLatexianTemp*
 #*Notes.bib
 
 *.pdf
+Makefile
+
