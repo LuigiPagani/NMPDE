@@ -143,6 +143,19 @@ domain_decomposition/fast:
 .PHONY : domain_decomposition/fast
 
 #=============================================================================
+# Target rules for targets named FK
+
+# Build rule for target.
+FK: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 FK
+.PHONY : FK
+
+# fast build rule for target.
+FK/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FK.dir/build.make CMakeFiles/FK.dir/build
+.PHONY : FK/fast
+
+#=============================================================================
 # Target rules for targets named stokes
 
 # Build rule for target.
@@ -338,6 +351,54 @@ src_elliptic_1D/elliptic_main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/elliptic_1D.dir/build.make CMakeFiles/elliptic_1D.dir/src_elliptic_1D/elliptic_main.cpp.s
 .PHONY : src_elliptic_1D/elliptic_main.cpp.s
 
+src_fk/FK_solver.o: src_fk/FK_solver.cpp.o
+.PHONY : src_fk/FK_solver.o
+
+# target to build an object file
+src_fk/FK_solver.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FK.dir/build.make CMakeFiles/FK.dir/src_fk/FK_solver.cpp.o
+.PHONY : src_fk/FK_solver.cpp.o
+
+src_fk/FK_solver.i: src_fk/FK_solver.cpp.i
+.PHONY : src_fk/FK_solver.i
+
+# target to preprocess a source file
+src_fk/FK_solver.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FK.dir/build.make CMakeFiles/FK.dir/src_fk/FK_solver.cpp.i
+.PHONY : src_fk/FK_solver.cpp.i
+
+src_fk/FK_solver.s: src_fk/FK_solver.cpp.s
+.PHONY : src_fk/FK_solver.s
+
+# target to generate assembly for a file
+src_fk/FK_solver.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FK.dir/build.make CMakeFiles/FK.dir/src_fk/FK_solver.cpp.s
+.PHONY : src_fk/FK_solver.cpp.s
+
+src_fk/main.o: src_fk/main.cpp.o
+.PHONY : src_fk/main.o
+
+# target to build an object file
+src_fk/main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FK.dir/build.make CMakeFiles/FK.dir/src_fk/main.cpp.o
+.PHONY : src_fk/main.cpp.o
+
+src_fk/main.i: src_fk/main.cpp.i
+.PHONY : src_fk/main.i
+
+# target to preprocess a source file
+src_fk/main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FK.dir/build.make CMakeFiles/FK.dir/src_fk/main.cpp.i
+.PHONY : src_fk/main.cpp.i
+
+src_fk/main.s: src_fk/main.cpp.s
+.PHONY : src_fk/main.s
+
+# target to generate assembly for a file
+src_fk/main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FK.dir/build.make CMakeFiles/FK.dir/src_fk/main.cpp.s
+.PHONY : src_fk/main.cpp.s
+
 src_linear_elasticity/LinearElasticity.o: src_linear_elasticity/LinearElasticity.cpp.o
 .PHONY : src_linear_elasticity/LinearElasticity.o
 
@@ -490,6 +551,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... FK"
 	@echo "... domain_decomposition"
 	@echo "... elliptic"
 	@echo "... elliptic_1D"
@@ -514,6 +576,12 @@ help:
 	@echo "... src_elliptic_1D/elliptic_main.o"
 	@echo "... src_elliptic_1D/elliptic_main.i"
 	@echo "... src_elliptic_1D/elliptic_main.s"
+	@echo "... src_fk/FK_solver.o"
+	@echo "... src_fk/FK_solver.i"
+	@echo "... src_fk/FK_solver.s"
+	@echo "... src_fk/main.o"
+	@echo "... src_fk/main.i"
+	@echo "... src_fk/main.s"
 	@echo "... src_linear_elasticity/LinearElasticity.o"
 	@echo "... src_linear_elasticity/LinearElasticity.i"
 	@echo "... src_linear_elasticity/LinearElasticity.s"

@@ -2,6 +2,7 @@
 /home/luigi/NMPDE/build/CMakeFiles/edit_cache.dir
 /home/luigi/NMPDE/build/CMakeFiles/linear_elasticity.dir
 /home/luigi/NMPDE/build/CMakeFiles/domain_decomposition.dir
+/home/luigi/NMPDE/build/CMakeFiles/FK.dir
 /home/luigi/NMPDE/build/CMakeFiles/stokes.dir
 /home/luigi/NMPDE/build/CMakeFiles/parabolic.dir
 /home/luigi/NMPDE/build/CMakeFiles/elliptic_1D.dir

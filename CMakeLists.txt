@@ -26,3 +26,6 @@ deal_ii_setup_target(domain_decomposition)
 
 add_executable(linear_elasticity src_linear_elasticity/linear_elasticity_main.cpp src_linear_elasticity/LinearElasticity.cpp)
 deal_ii_setup_target(linear_elasticity)
+
+add_executable(FK src_fk/main.cpp src_fk/FK_solver.cpp)
+deal_ii_setup_target(FK)
