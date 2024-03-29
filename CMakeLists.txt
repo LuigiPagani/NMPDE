@@ -29,3 +29,6 @@ deal_ii_setup_target(linear_elasticity)
 
 add_executable(FK src_fk/main.cpp src_fk/FK_solver.cpp)
 deal_ii_setup_target(FK)
+
+add_executable(NonLinear src_nonlinear/NonLinear_main.cpp src_nonlinear/HeatNonLinear.cpp)
+deal_ii_setup_target(NonLinear)
