@@ -31,7 +31,7 @@
 
 using namespace dealii;
 
-//#define NEUMANN_CONDITION
+#define NEUMANN_CONDITION
 
 
 // Class representing the non-linear diffusion problem.

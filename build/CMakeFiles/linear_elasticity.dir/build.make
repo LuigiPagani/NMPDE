@@ -108,7 +108,7 @@ linear_elasticity_EXTERNAL_OBJECTS =
 linear_elasticity: CMakeFiles/linear_elasticity.dir/src_linear_elasticity/linear_elasticity_main.cpp.o
 linear_elasticity: CMakeFiles/linear_elasticity.dir/src_linear_elasticity/LinearElasticity.cpp.o
 linear_elasticity: CMakeFiles/linear_elasticity.dir/build.make
-linear_elasticity: /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.3.1/lib/libdeal_II.g.so.9.3.1
+linear_elasticity: /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.3.1/lib/libdeal_II.so.9.3.1
 linear_elasticity: /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/boost/1.76.0/lib/libboost_iostreams.so
 linear_elasticity: /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/boost/1.76.0/lib/libboost_serialization.so
 linear_elasticity: /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/boost/1.76.0/lib/libboost_system.so
