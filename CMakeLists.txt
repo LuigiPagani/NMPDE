@@ -32,3 +32,6 @@ deal_ii_setup_target(FK)
 
 add_executable(NonLinear src_nonlinear/NonLinear_main.cpp src_nonlinear/HeatNonLinear.cpp)
 deal_ii_setup_target(NonLinear)
+
+add_executable(1D_Mesh src_1D_Mesh/mesh_main.cpp)
+deal_ii_setup_target(1D_Mesh)
