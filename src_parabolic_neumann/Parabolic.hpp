@@ -170,7 +170,6 @@ public:
   };
 #endif //NEUMANN
 
-#ifdef CONVERGENCE
     // Exact solution.
   class ExactSolution : public Function<dim>
   {
@@ -207,7 +206,6 @@ public:
       return result;
     }
   };
-#endif //CONVERGENCE
 
   // Constructor. We provide the final time, time step Delta t and theta method
   // parameter as constructor arguments.
@@ -295,10 +293,9 @@ protected:
   // g(x).
   FunctionG function_g;
 
-#ifdef CONVERGENCE
   // Exact solution.
   ExactSolution exact_solution;
-#endif //CONVERGENCE
+
 
 #ifdef NEUMANN
   // Quadrature formula used on boundary lines.

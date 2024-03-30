@@ -33,6 +33,8 @@ using namespace dealii;
 // Class representing the non-linear diffusion problem.
 class HeatNonLinear
 #define NEUMANN
+#define CONVERGENCE
+#define SPATIAL_CONVERGENCE
 
 {
 public:
@@ -90,6 +92,43 @@ public:
     }
   };
 
+   // Exact solution.
+  class ExactSolution : public Function<dim>
+  {
+  public:
+    virtual double
+    value(const Point<dim> &p,
+          const unsigned int /*component*/ = 0) const override
+    {
+      return std::sin(5 * M_PI * get_time()) * std::sin(2 * M_PI * p[0]) *
+             std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]);
+    }
+
+    virtual Tensor<1, dim>
+    gradient(const Point<dim> &p,
+             const unsigned int /*component*/ = 0) const override
+    {
+      Tensor<1, dim> result;
+
+      // duex / dx
+      result[0] = 2 * M_PI * std::sin(5 * M_PI * get_time()) *
+                  std::cos(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
+                  std::sin(4 * M_PI * p[2]);
+
+      // duex / dy
+      result[1] = 3 * M_PI * std::sin(5 * M_PI * get_time()) *
+                  std::sin(2 * M_PI * p[0]) * std::cos(3 * M_PI * p[1]) *
+                  std::sin(4 * M_PI * p[2]);
+
+      // duex / dz
+      result[2] = 4 * M_PI * std::sin(5 * M_PI * get_time()) *
+                  std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
+                  std::cos(4 * M_PI * p[2]);
+
+      return result;
+    }
+  };
+
   #ifdef NEUMANN
   // Function for Neumann boundary conditions.
   class FunctionH : public Function<dim>
@@ -142,6 +181,12 @@ public:
   void
   solve();
 
+  #ifdef CONVERGENCE
+  // Compute the error.
+  double
+  compute_error(const VectorTools::NormType &norm_type);
+#endif //CONVERGENCE
+
 protected:
   // Assemble the tangent problem.
   void
@@ -183,6 +228,9 @@ protected:
 
   // Dirichlet boundary conditions.
   FunctionG function_g;
+
+  // Exact solution.
+  ExactSolution exact_solution;
 
   #ifdef NEUMANN
   // Quadrature formula used on boundary lines.
