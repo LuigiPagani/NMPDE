@@ -32,6 +32,8 @@ using namespace dealii;
 
 // Class representing the non-linear diffusion problem.
 class HeatNonLinear
+#define NEUMANN
+
 {
 public:
   // Physical dimension (1D, 2D, 3D)
@@ -88,6 +90,21 @@ public:
     }
   };
 
+  #ifdef NEUMANN
+  // Function for Neumann boundary conditions.
+  class FunctionH : public Function<dim>
+  {
+  public:
+    virtual double
+    value(const Point<dim> & /*p*/,
+          const unsigned int /*component*/ = 0) const override
+    {
+      return 0.0;
+    }
+  };
+
+  #endif // NEUMANN
+
   // Function for initial conditions.
   class FunctionU0 : public Function<dim>
   {
@@ -99,6 +116,7 @@ public:
       return 0.0;
     }
   };
+
 
   // Constructor. We provide the final time, time step Delta t and theta method
   // parameter as constructor arguments.
@@ -165,6 +183,15 @@ protected:
 
   // Dirichlet boundary conditions.
   FunctionG function_g;
+
+  #ifdef NEUMANN
+  // Quadrature formula used on boundary lines.
+  std::unique_ptr<Quadrature<dim - 1>> quadrature_boundary;
+
+  // h(x).
+  FunctionH function_h;
+#endif //NEUMANN
+
 
   // Initial conditions.
   FunctionU0 u_0;
