@@ -6,6 +6,9 @@
 
 #include <deal.II/distributed/fully_distributed_tria.h>
 
+#include <deal.II/fe/mapping_fe.h>
+
+
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 
@@ -26,6 +29,7 @@
 #include <iostream>
 
 #define NEUMANN
+#define CONVERGENCE
 
 using namespace dealii;
 
@@ -98,6 +102,43 @@ public:
       return 0.0;
     }
   };
+
+     // Exact solution.
+  class ExactSolution : public Function<dim>
+  {
+  public:
+    virtual double
+    value(const Point<dim> &p,
+          const unsigned int /*component*/ = 0) const override
+    {
+      return std::sin(5 * M_PI * get_time()) * std::sin(2 * M_PI * p[0]) *
+             std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]);
+    }
+
+    virtual Tensor<1, dim>
+    gradient(const Point<dim> &p,
+             const unsigned int /*component*/ = 0) const override
+    {
+      Tensor<1, dim> result;
+
+      // duex / dx
+      result[0] = 2 * M_PI * std::sin(5 * M_PI * get_time()) *
+                  std::cos(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
+                  std::sin(4 * M_PI * p[2]);
+
+      // duex / dy
+      result[1] = 3 * M_PI * std::sin(5 * M_PI * get_time()) *
+                  std::sin(2 * M_PI * p[0]) * std::cos(3 * M_PI * p[1]) *
+                  std::sin(4 * M_PI * p[2]);
+
+      // duex / dz
+      result[2] = 4 * M_PI * std::sin(5 * M_PI * get_time()) *
+                  std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
+                  std::cos(4 * M_PI * p[2]);
+
+      return result;
+    }
+  };
   
 
   // Constructor.
@@ -121,6 +162,13 @@ public:
   // Output.
   void
   output() const;
+
+  #ifdef CONVERGENCE
+  // Compute the error.
+  double
+  compute_error(const VectorTools::NormType &norm_type);
+ 
+ #endif //CONVERGENCE
 
 protected:
   // Assemble the tangent problem.
@@ -162,6 +210,11 @@ protected:
   // h(x).
   FunctionH function_h;
 #endif //NEUMANN
+
+#ifdef CONVERGENCE
+  // Exact solution.
+  ExactSolution exact_solution;
+#endif //CONVERGENCE
 
   // Discretization. ///////////////////////////////////////////////////////////
 
