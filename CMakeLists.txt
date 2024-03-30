@@ -35,3 +35,6 @@ deal_ii_setup_target(nonlinear_td)
 
 add_executable(1D_Mesh src_1D_Mesh/mesh_main.cpp)
 deal_ii_setup_target(1D_Mesh)
+
+add_executable(nonlinear_steady src_nonlinear_steady/NonLinear_main.cpp src_nonlinear_steady/NonLinearDiffusion.cpp)
+deal_ii_setup_target(nonlinear_steady)
