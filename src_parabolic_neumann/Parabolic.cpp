@@ -267,7 +267,8 @@ Parabolic::assemble_rhs(const double &time)
               // tag) is that of one of the Neumann boundaries, we assemble the
               // boundary integral.
               if (cell->face(face_number)->at_boundary() &&
-                  (cell->face(face_number)->boundary_id() == 1))
+                  (cell->face(face_number)->boundary_id() == 1) ||
+                  (cell->face(face_number)->boundary_id() == 3))
                 {
                   fe_values_boundary.reinit(cell, face_number);
 
@@ -301,12 +302,8 @@ Parabolic::assemble_rhs(const double &time)
     std::map<types::boundary_id, const Function<dim> *> boundary_functions;
     //for (unsigned int i = 0; i < 4; ++i)
     //  boundary_functions[i] = &function_g;
-    boundary_functions[0] = &exact_solution;
-    boundary_functions[1] = &exact_solution;
-    boundary_functions[2] = &exact_solution;
-    boundary_functions[3] = &exact_solution;
-    boundary_functions[4] = &exact_solution;
-    boundary_functions[5] = &exact_solution;
+    boundary_functions[0] = &function_g;
+    boundary_functions[2] = &function_g;
 
     VectorTools::interpolate_boundary_values(dof_handler,
                                              boundary_functions,
@@ -320,10 +317,10 @@ Parabolic::assemble_rhs(const double &time)
 void
 Parabolic::solve_time_step()
 {
-  SolverControl solver_control(1000, 1e-6 * system_rhs.l2_norm());
+  SolverControl solver_control(10000, 1e-6 * system_rhs.l2_norm());
 
-  SolverCG<TrilinosWrappers::MPI::Vector> solver(solver_control);
-  //SolverGMRES<TrilinosWrappers::MPI::Vector> solver(solver_control);
+  //SolverCG<TrilinosWrappers::MPI::Vector> solver(solver_control);
+  SolverGMRES<TrilinosWrappers::MPI::Vector> solver(solver_control);
   TrilinosWrappers::PreconditionSSOR      preconditioner;
   preconditioner.initialize(
     lhs_matrix, TrilinosWrappers::PreconditionSSOR::AdditionalData(1.0));
@@ -366,7 +363,7 @@ Parabolic::solve()
 
     //exact_solution.set_time(time);
     exact_solution.set_time(time);
-    VectorTools::interpolate(dof_handler, exact_solution, solution_owned);
+    VectorTools::interpolate(dof_handler, u_0, solution_owned);
     solution = solution_owned;
 
     // Output the initial solution.

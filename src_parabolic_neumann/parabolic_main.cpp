@@ -85,7 +85,6 @@ main(int argc, char *argv[])
         }
     }
 
-  #endif //CONVERGENCE
 
   
   #ifdef SPATIAL_CONVERGENCE
@@ -142,6 +141,8 @@ main(int argc, char *argv[])
   return 0;
 }
 
+#endif
+
 #ifndef CONVERGENCE
 // Main function.
 int
@@ -149,12 +150,12 @@ main(int argc, char *argv[])
 {
   Utilities::MPI::MPI_InitFinalize mpi_init(argc, argv);
 
-  const std::string  mesh_file_name = "../mesh/mesh-square-h0.100000.msh";
+  const std::string  mesh_file_name = "../mesh/mesh-square-h0.012500.msh";
   const unsigned int degree         = 2;
 
-  const double T      = 3.0;
+  const double T      = 2.0;
   const double deltat = 0.1;
-  const double theta  = 1.0;
+  const double theta  = 0.5;
 
   Parabolic problem(mesh_file_name, degree, T, deltat, theta);
 

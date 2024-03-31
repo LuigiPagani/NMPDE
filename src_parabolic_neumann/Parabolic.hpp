@@ -31,9 +31,9 @@
 
 using namespace dealii;
 
-//#define NEUMANN
-#define CONVERGENCE
-//#define SPATIAL_CONVERGENCE
+#define NEUMANN
+//#define CONVERGENCE
+#define SPATIAL_CONVERGENCE
 //#define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT
 //#define REACTION_COEFFICIENT
@@ -43,7 +43,7 @@ class Parabolic
 {
 public:
   // Physical dimension (1D, 2D, 3D)
-  static constexpr unsigned int dim = 3;
+  static constexpr unsigned int dim = 2;
 
 #ifdef MUCOEFFICIENT
   // Function for the mu coefficient.
@@ -54,7 +54,7 @@ public:
     value(const Point<dim> & /*p*/,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
+      return 3.0;
     }
   };
 #endif //MUCOEFFICIENT
@@ -114,11 +114,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return (29 * M_PI * M_PI * std::sin(5 * M_PI * get_time()) +
-              5 * M_PI * std::cos(5 * M_PI * get_time())) *
-             std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
-             std::sin(4 * M_PI * p[2]);
-
+        return std::exp(-get_time())*std::exp(-(p[0] - 0.5)*(p[0]-0.5) - (p[1] - 0.5)*(p[1]-0.5));
     }
   };
 
@@ -130,7 +126,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 0.0;
+      return 2.0;
     }
   };
 
@@ -142,7 +138,7 @@ public:
     value(const Point<dim> &/*p*/,
           const unsigned int /*component*/ = 0) const override
     {
-      return 0.0;
+      return 2.0;
     }
   };
 
@@ -159,13 +155,7 @@ public:
     virtual double
     value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
     {
-      if(p[0] == 0.0 && p[1] < 1.0 && p[1] > 0.0)
-        return (-std::sin(M_PI*p[1])*std::exp(p[1]));
-      else if (p[0] == 1.0 && p[1] < 1.0 && p[1] > 0.0)
-        return (std::sin(M_PI*p[1])*std::exp(p[1]+1));
-      else
-        return 0.0;
-      return 0.0;
+      return std::exp(-get_time());
     }
   };
 #endif //NEUMANN
@@ -178,8 +168,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::sin(5 * M_PI * get_time()) * std::sin(2 * M_PI * p[0]) *
-             std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]);
+      return 0;
     }
 
     virtual Tensor<1, dim>
