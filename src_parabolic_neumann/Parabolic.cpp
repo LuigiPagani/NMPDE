@@ -163,7 +163,7 @@ Parabolic::assemble_matrices()
 #ifdef REACTION_COEFFICIENT
                   cell_stiffness_matrix(i, j) +=
                     reaction_coefficient.value(
-                      fe_values.quadrature_point(q)) * // sigma(x)
+                    fe_values.quadrature_point(q)) * // sigma(x)
                     fe_values.shape_value(i, q) *      // phi_i
                     fe_values.shape_value(j, q) *      // phi_j
                     fe_values.JxW(q);                  // dx

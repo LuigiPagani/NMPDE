@@ -16,7 +16,7 @@ main(int argc, char *argv[])
   const unsigned int degree = 1;
 
   double T     = 1.0;
-  double theta = 1.0;
+  double theta = 0.5;
 
   const std::vector<double> deltat_vector = {
     0.25, 0.125, 0.0625, 0.03125, 0.015625};
