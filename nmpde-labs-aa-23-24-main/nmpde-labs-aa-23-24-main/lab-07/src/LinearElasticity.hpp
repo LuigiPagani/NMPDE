@@ -17,6 +17,7 @@
 #include <deal.II/grid/grid_in.h>
 
 #include <deal.II/lac/solver_cg.h>
+#include <deal.II/lac/solver_gmres.h>
 #include <deal.II/lac/trilinos_precondition.h>
 #include <deal.II/lac/trilinos_sparse_matrix.h>
 
@@ -26,6 +27,9 @@
 
 #include <fstream>
 #include <iostream>
+
+#define NEUMANN_CONDITION
+
 
 using namespace dealii;
 
@@ -70,8 +74,8 @@ public:
     vector_value(const Point<dim> & /*p*/,
                  Vector<double> &values) const override
     {
-      values[0] = 0.0;
-      values[1] = 0.0;
+      values[0] = 5.0;
+      values[1] = 3.0;
       values[2] = val;
     }
 
@@ -80,15 +84,15 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 0.0;
+        return 5.0;
       else if (component == 1)
-        return 0.0;
+        return 3.0;
       else // if (component == 2)
         return val;
     }
 
   protected:
-    const double val = -1.0;
+    const double val = 10.0;
   };
 
   // Function for the Dirichlet datum.
@@ -107,14 +111,29 @@ public:
     value(const Point<dim> &p, const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 0.1 * p[0];
+        return 0.25 * p[0];
       else if (component == 1)
-        return 0.1 * p[0];
+        return 0.25 * p[0];
       else // if (component == 2)
         return 0.0;
     }
   };
 
+#ifdef NEUMANN_CONDITION
+// Function for the Neumann boundary condition.
+class FunctionNeumann : public Function<dim>
+{
+public:
+  virtual void
+  vector_value(const Point<dim> &p, Vector<double> &values) const override
+  {
+    values[0] = 1.0;
+    values[1] = 1.0;
+    values[2] = 1.0;
+  }
+};
+
+#endif // NEUMANN_CONDITION
   // Constructor.
   LinearElasticity(const std::string &mesh_file_name_, const unsigned int &r_)
     : mpi_size(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD))
@@ -166,6 +185,15 @@ protected:
 
   // Dirichlet datum.
   FunctionG function_g;
+
+  #ifdef NEUMANN_CONDITION
+
+  FunctionNeumann function_neumann;
+
+  std::unique_ptr<Quadrature<dim - 1>> quadrature_face;
+
+
+  #endif // NEUMANN_CONDITION
 
   // Discretization. ///////////////////////////////////////////////////////////
 

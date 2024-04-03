@@ -52,8 +52,8 @@ LinearElasticity::setup()
 
     pcout << "  Quadrature points per cell = " << quadrature->size()
           << std::endl;
-    
-       #ifdef NEUMANN_CONDITION
+
+    #ifdef NEUMANN_CONDITION
     // For Neumann boundary condition
     quadrature_face = std::make_unique<QGaussSimplex<dim - 1>>(fe->degree + 1);
 
@@ -121,7 +121,7 @@ LinearElasticity::assemble_system()
   const unsigned int dofs_per_cell = fe->dofs_per_cell;
   const unsigned int n_q           = quadrature->size();
 
-  #ifdef NEUMANN_CONDITION
+#ifdef NEUMANN_CONDITION
   const unsigned int n_q_face      = quadrature_face->size();
 #endif //NEUMANN_CONDITION
 
@@ -130,15 +130,16 @@ LinearElasticity::assemble_system()
                           update_values | update_gradients |
                             update_quadrature_points | update_JxW_values);
 
-  FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-  Vector<double>     cell_rhs(dofs_per_cell);
-
 #ifdef NEUMANN_CONDITION
   FEFaceValues<dim> fe_face_values(*fe,
                                    *quadrature_face,
                                    update_values | update_normal_vectors |update_quadrature_points|
                                      update_JxW_values);
 #endif //NEUMANN_CONDITION
+
+  FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+  Vector<double>     cell_rhs(dofs_per_cell);
+
   std::vector<types::global_dof_index> dof_indices(dofs_per_cell);
 
   system_matrix = 0.0;
@@ -195,16 +196,17 @@ LinearElasticity::assemble_system()
             }
         }
 
-        #ifdef NEUMANN_CONDITION
+  
+
+#ifdef NEUMANN_CONDITION
 // Boundary integral for Neumann BCs.
 if (cell->at_boundary())
 {
     for (unsigned int f = 0; f < cell->n_faces(); ++f)
     {
         if (cell->face(f)->at_boundary() && (
-          cell->face(f)->boundary_id() == 2||
+          cell->face(f)->boundary_id() == 1||
           cell->face(f)->boundary_id() == 3||
-          cell->face(f)->boundary_id() == 4||
           cell->face(f)->boundary_id() == 5))
         {
             fe_face_values.reinit(cell, f);
@@ -233,6 +235,7 @@ if (cell->at_boundary())
 }
 #endif //NEUMANN_CONDITION
 
+  
 
       cell->get_dof_indices(dof_indices);
 
@@ -242,6 +245,8 @@ if (cell->at_boundary())
 
   system_matrix.compress(VectorOperation::add);
   system_rhs.compress(VectorOperation::add);
+    
+
 
   // Boundary conditions.
   {
@@ -251,6 +256,11 @@ if (cell->at_boundary())
 
     boundary_functions[0] = &function_g;
     boundary_functions[1] = &function_g;
+    // boundary_functions[2] = &function_g;
+    // boundary_functions[3] = &function_g;
+    // boundary_functions[4] = &function_g;
+    // boundary_functions[5] = &function_g;  
+
 
     VectorTools::interpolate_boundary_values(dof_handler,
                                              boundary_functions,
@@ -261,25 +271,29 @@ if (cell->at_boundary())
   }
 }
 
-void
-LinearElasticity::solve_system()
+void LinearElasticity::solve_system()
 {
-  pcout << "===============================================" << std::endl;
-  pcout << "Solving the system" << std::endl;
+    pcout << "===============================================" << std::endl;
+    pcout << "Solving the system" << std::endl;
 
-  SolverControl solver_control(10000, 1e-6 * system_rhs.l2_norm());
-
-  //SolverGMRES<dealii::TrilinosWrappers::MPI::Vector> solver(solver_control);
-  SolverCG<TrilinosWrappers::MPI::Vector> solver(solver_control);
-  TrilinosWrappers::PreconditionSSOR      preconditioner;
-  preconditioner.initialize(
+    SolverControl solver_control(5000, 1.0e-14*system_rhs.l2_norm());
+    dealii::TrilinosWrappers::PreconditionSSOR preconditioner;
+    preconditioner.initialize(
     system_matrix, TrilinosWrappers::PreconditionSSOR::AdditionalData(1.0));
+    std::cout << "  Solving the linear system" << std::endl;
 
-  solver.solve(system_matrix, solution_owned, system_rhs, preconditioner);
-  pcout << "  " << solver_control.last_step() << " CG iterations" << std::endl;
+#ifdef GMRES
+    dealii::SolverGMRES<dealii::TrilinosWrappers::MPI::Vector> solver(solver_control);
+#else
+    dealii::SolverCG<dealii::TrilinosWrappers::MPI::Vector> solver(solver_control);
+#endif
 
-  solution = solution_owned;
+    solver.solve(system_matrix, solution, system_rhs, preconditioner);
+    std::cout << "  " << solver_control.last_step() << " iterations" << std::endl;
+
+    solution = solution_owned;
 }
+
 
 void
 LinearElasticity::output() const

@@ -32,10 +32,10 @@
 #include <iostream>
 
 #define NEUMANN
+#define GMRES
 //#define CONVERGENCE
 //#define TRANSPORT_COEFFICIENT
 //#define REACTION_COEFFICIENT
-#define CG
 
 
 using namespace dealii;

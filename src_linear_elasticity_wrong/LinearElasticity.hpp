@@ -13,6 +13,8 @@
 #include <deal.II/fe/fe_system.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/fe/fe_values_extractors.h>
+#include <deal.II/fe/mapping_fe.h>
+
 
 #include <deal.II/grid/grid_in.h>
 
@@ -20,6 +22,10 @@
 #include <deal.II/lac/solver_gmres.h>
 #include <deal.II/lac/trilinos_precondition.h>
 #include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/lac/trilinos_precondition.h>
+#include <deal.II/lac/precondition.h>
+#include <deal.II/lac/dynamic_sparsity_pattern.h>
+
 
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/matrix_tools.h>
@@ -28,10 +34,10 @@
 #include <fstream>
 #include <iostream>
 
-#define NEUMANN_CONDITION
-
-
 using namespace dealii;
+
+//#define NEUMANN_CONDITION
+
 
 // Class representing the non-linear diffusion problem.
 class LinearElasticity
@@ -74,8 +80,8 @@ public:
     vector_value(const Point<dim> & /*p*/,
                  Vector<double> &values) const override
     {
-      values[0] = 5.0;
-      values[1] = 3.0;
+      values[0] = 0.0;
+      values[1] = 0.0;
       values[2] = val;
     }
 
@@ -84,15 +90,15 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 5.0;
+        return 0.0;
       else if (component == 1)
-        return 3.0;
+        return 0.0;
       else // if (component == 2)
         return val;
     }
 
   protected:
-    const double val = 10.0;
+    const double val = 1.0;
   };
 
   // Function for the Dirichlet datum.
@@ -102,8 +108,8 @@ public:
     virtual void
     vector_value(const Point<dim> &p, Vector<double> &values) const override
     {
-      values[0] = 0.25 * p[0];
-      values[1] = 0.25 * p[0];
+      values[0] = 0.25*p[0];
+      values[1] = 0.25*p[0];
       values[2] = 0.0;
     }
 
@@ -111,9 +117,9 @@ public:
     value(const Point<dim> &p, const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 0.25 * p[0];
+        return 0.1*p[0];
       else if (component == 1)
-        return 0.25 * p[0];
+        return 0.1*p[0];
       else // if (component == 2)
         return 0.0;
     }
@@ -128,12 +134,14 @@ public:
   vector_value(const Point<dim> &p, Vector<double> &values) const override
   {
     values[0] = 1.0;
-    values[1] = 1.0;
-    values[2] = 1.0;
+    values[1] = 0.0;
+    values[2] = 0.0;
   }
 };
 
 #endif // NEUMANN_CONDITION
+
+
   // Constructor.
   LinearElasticity(const std::string &mesh_file_name_, const unsigned int &r_)
     : mpi_size(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD))
@@ -194,6 +202,7 @@ protected:
 
 
   #endif // NEUMANN_CONDITION
+
 
   // Discretization. ///////////////////////////////////////////////////////////
 

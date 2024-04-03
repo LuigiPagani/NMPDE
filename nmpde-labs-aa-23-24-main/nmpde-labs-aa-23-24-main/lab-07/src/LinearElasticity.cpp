@@ -52,6 +52,14 @@ LinearElasticity::setup()
 
     pcout << "  Quadrature points per cell = " << quadrature->size()
           << std::endl;
+    
+       #ifdef NEUMANN_CONDITION
+    // For Neumann boundary condition
+    quadrature_face = std::make_unique<QGaussSimplex<dim - 1>>(fe->degree + 1);
+
+    pcout << "  Quadrature points per face = " << quadrature_face->size()
+          << std::endl;
+#endif //NEUMANN_CONDITION
   }
 
   pcout << "-----------------------------------------------" << std::endl;
@@ -113,6 +121,10 @@ LinearElasticity::assemble_system()
   const unsigned int dofs_per_cell = fe->dofs_per_cell;
   const unsigned int n_q           = quadrature->size();
 
+  #ifdef NEUMANN_CONDITION
+  const unsigned int n_q_face      = quadrature_face->size();
+#endif //NEUMANN_CONDITION
+
   FEValues<dim> fe_values(*fe,
                           *quadrature,
                           update_values | update_gradients |
@@ -121,6 +133,12 @@ LinearElasticity::assemble_system()
   FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
   Vector<double>     cell_rhs(dofs_per_cell);
 
+#ifdef NEUMANN_CONDITION
+  FEFaceValues<dim> fe_face_values(*fe,
+                                   *quadrature_face,
+                                   update_values | update_normal_vectors |update_quadrature_points|
+                                     update_JxW_values);
+#endif //NEUMANN_CONDITION
   std::vector<types::global_dof_index> dof_indices(dofs_per_cell);
 
   system_matrix = 0.0;
@@ -177,6 +195,45 @@ LinearElasticity::assemble_system()
             }
         }
 
+        #ifdef NEUMANN_CONDITION
+// Boundary integral for Neumann BCs.
+if (cell->at_boundary())
+{
+    for (unsigned int f = 0; f < cell->n_faces(); ++f)
+    {
+        if (cell->face(f)->at_boundary() && (
+          cell->face(f)->boundary_id() == 2||
+          cell->face(f)->boundary_id() == 3||
+          cell->face(f)->boundary_id() == 4||
+          cell->face(f)->boundary_id() == 5))
+        {
+            fe_face_values.reinit(cell, f);
+
+            for (unsigned int q = 0; q < n_q_face; ++q)
+            {
+                Vector<double> function_values(dim);
+                function_neumann.vector_value(fe_face_values.quadrature_point(q), function_values);
+
+                Tensor<1, dim> local_function_neumann_tensor;
+                for (unsigned int d = 0; d < dim; ++d)
+                {
+                    local_function_neumann_tensor[d] = function_values[d];
+                }
+
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                {
+                    cell_rhs(i) +=
+                        scalar_product(local_function_neumann_tensor,
+                                       fe_face_values[displacement].value(i, q)) *
+                        fe_face_values.JxW(q);
+                }
+            }
+        }
+    }
+}
+#endif //NEUMANN_CONDITION
+
+
       cell->get_dof_indices(dof_indices);
 
       system_matrix.add(dof_indices, cell_matrix);
@@ -210,8 +267,9 @@ LinearElasticity::solve_system()
   pcout << "===============================================" << std::endl;
   pcout << "Solving the system" << std::endl;
 
-  SolverControl solver_control(1000, 1e-6 * system_rhs.l2_norm());
+  SolverControl solver_control(10000, 1e-6 * system_rhs.l2_norm());
 
+  //SolverGMRES<dealii::TrilinosWrappers::MPI::Vector> solver(solver_control);
   SolverCG<TrilinosWrappers::MPI::Vector> solver(solver_control);
   TrilinosWrappers::PreconditionSSOR      preconditioner;
   preconditioner.initialize(
