@@ -32,7 +32,7 @@
 using namespace dealii;
 
 #define NEUMANN
-//#define CONVERGENCE
+#define CONVERGENCE
 #define SPATIAL_CONVERGENCE
 //#define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT
@@ -43,7 +43,7 @@ class Parabolic
 {
 public:
   // Physical dimension (1D, 2D, 3D)
-  static constexpr unsigned int dim = 2;
+  static constexpr unsigned int dim = 3;
 
 #ifdef MUCOEFFICIENT
   // Function for the mu coefficient.
