@@ -12,10 +12,10 @@ main(int argc, char *argv[])
 
   ConvergenceTable table;
 
-  const std::vector<std::string> meshes = {"../mesh/mesh-cube-5.msh",
-                                           "../mesh/mesh-cube-10.msh",
-                                           "../mesh/mesh-cube-20.msh",
-                                           "../mesh/mesh-cube-40.msh"};
+  const std::vector<std::string> meshes = {"../mesh/mesh-square-h0.100000.msh",
+                                           "../mesh/mesh-square-h0.050000.msh",
+                                           "../mesh/mesh-square-h0.025000.msh",
+                                           "../mesh/mesh-square-h0.012500.msh"};
   const std::vector<double>      h_vals = {1.0 / 10.0,
                                            1.0 / 20.0,
                                            1.0 / 40.0,

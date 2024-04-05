@@ -211,8 +211,9 @@ NonLinearDiffusion::assemble_system()
               // If current face lies on the boundary, and its boundary ID (or
               // tag) is that of one of the Neumann boundaries, we assemble the
               // boundary integral.
-              if (cell->face(face_number)->at_boundary() &&
-                  (cell->face(face_number)->boundary_id() == 1))
+              if (cell->face(face_number)->at_boundary() && (
+                  (cell->face(face_number)->boundary_id() == 0)||
+                  (cell->face(face_number)->boundary_id() == 1)))
                 {
                   fe_values_boundary.reinit(cell, face_number);
 
@@ -243,9 +244,11 @@ NonLinearDiffusion::assemble_system()
 
     std::map<types::boundary_id, const Function<dim> *> boundary_functions;
     Functions::ZeroFunction<dim>                        zero_function;
+    
+    boundary_functions[0] = &zero_function;
+    boundary_functions[1] = &zero_function;
 
-    for (unsigned int i = 0; i < 6; ++i)
-      boundary_functions[i] = &zero_function;
+
 
     VectorTools::interpolate_boundary_values(dof_handler,
                                              boundary_functions,
@@ -259,7 +262,7 @@ NonLinearDiffusion::assemble_system()
 void
 NonLinearDiffusion::solve_system()
 {
-  SolverControl solver_control(1000, 1e-6 * residual_vector.l2_norm());
+  SolverControl solver_control(1000, 1e-12 * residual_vector.l2_norm());
 
   SolverGMRES<TrilinosWrappers::MPI::Vector> solver(solver_control);
   TrilinosWrappers::PreconditionSSOR         preconditioner;
@@ -277,10 +280,32 @@ NonLinearDiffusion::solve_newton()
   pcout << "===============================================" << std::endl;
 
   const unsigned int n_max_iters        = 1000;
-  const double       residual_tolerance = 1e-6;
+  const double       residual_tolerance = 1e-12;
 
   unsigned int n_iter        = 0;
   double       residual_norm = residual_tolerance + 1;
+
+    {
+    std::vector<bool> boundary_components(4, false); // Assuming there are 4 faces
+    boundary_components[0] = true; // Face 0
+    boundary_components[1] = true; // Face 1
+
+    // Extract the DoFs on the specified faces
+    IndexSet dirichlet_dofs = DoFTools::extract_boundary_dofs(
+      dof_handler,
+      ComponentMask(boundary_components)
+    );
+    dirichlet_dofs = dirichlet_dofs & dof_handler.locally_owned_dofs();
+
+    TrilinosWrappers::MPI::Vector vector_dirichlet(solution_owned);
+    VectorTools::interpolate(dof_handler, function_g, vector_dirichlet);
+
+    for (const auto &idx : dirichlet_dofs)
+      solution_owned[idx] = vector_dirichlet[idx];
+
+    solution_owned.compress(VectorOperation::insert);
+    solution = solution_owned;
+  }
 
   while (n_iter < n_max_iters && residual_norm > residual_tolerance)
     {

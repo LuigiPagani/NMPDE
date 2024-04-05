@@ -1,0 +1,12 @@
+/home/luigi/NMPDE/build/CMakeFiles/rebuild_cache.dir
+/home/luigi/NMPDE/build/CMakeFiles/edit_cache.dir
+/home/luigi/NMPDE/build/CMakeFiles/nonlinear_td.dir
+/home/luigi/NMPDE/build/CMakeFiles/linear_elasticity.dir
+/home/luigi/NMPDE/build/CMakeFiles/domain_decomposition.dir
+/home/luigi/NMPDE/build/CMakeFiles/nonlinear_steady.dir
+/home/luigi/NMPDE/build/CMakeFiles/1D_Mesh.dir
+/home/luigi/NMPDE/build/CMakeFiles/FK.dir
+/home/luigi/NMPDE/build/CMakeFiles/stokes.dir
+/home/luigi/NMPDE/build/CMakeFiles/parabolic.dir
+/home/luigi/NMPDE/build/CMakeFiles/elliptic_1D.dir
+/home/luigi/NMPDE/build/CMakeFiles/elliptic.dir

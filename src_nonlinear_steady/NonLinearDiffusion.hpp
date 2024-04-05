@@ -38,7 +38,7 @@ class NonLinearDiffusion
 {
 public:
   // Physical dimension (1D, 2D, 3D)
-  static constexpr unsigned int dim = 3;
+  static constexpr unsigned int dim = 2;
 
   // Function for the mu_0 coefficient.
   class FunctionMu0 : public Function<dim>
@@ -69,10 +69,16 @@ public:
   {
   public:
     virtual double
-    value(const Point<dim> & /*p*/,
+    value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
+          double x = p[0];
+          double y = p[1];
+          double pi = M_PI;
+
+          return 20 * std::pow(pi, 2) * std::pow(std::cos(pi * x), 2) * std::pow(std::cos(pi * y), 3) * std::sin(pi * x)
+                - 2 * std::pow(pi, 2) * std::cos(pi * y) * std::sin(pi * x) * (1 + 10 * std::pow(std::cos(pi * y), 2) * std::pow(std::sin(pi * x), 2))
+                + 20 * std::pow(pi, 2) * std::cos(pi * y) * std::pow(std::sin(pi * x), 3) * std::pow(std::sin(pi * y), 2);
     }
   };
 
@@ -82,10 +88,14 @@ public:
   {
   public:
     virtual double
-    value(const Point<dim> & /*p*/,
+    value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
-    {
-      return 0.0;
+    { if(p[0]==0)
+        return -M_PI*(1.0+10.0 *std::sin(M_PI*p[0])*std::sin(M_PI*p[0])*std::cos(M_PI*p[1])*std::cos(M_PI*p[1]))*std::cos(M_PI*p[1]);
+      else if(p[0]==1)
+        return M_PI*(1.0+10.0 *std::sin(M_PI*p[0])*std::sin(M_PI*p[0])*std::cos(M_PI*p[1])*std::cos(M_PI*p[1]))*std::cos(M_PI*p[1]);
+
+        
     }
   };
 
@@ -96,10 +106,10 @@ public:
   {
   public:
     virtual double
-    value(const Point<dim> & /*p*/,
+    value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 0.0;
+      return std::sin(M_PI*p[0])*std::cos(M_PI*p[1]);
     }
   };
 
@@ -111,8 +121,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::sin(5 * M_PI * get_time()) * std::sin(2 * M_PI * p[0]) *
-             std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]);
+      return std::sin(M_PI*p[0])*std::cos(M_PI*p[1]) ;
     }
 
     virtual Tensor<1, dim>
@@ -122,19 +131,15 @@ public:
       Tensor<1, dim> result;
 
       // duex / dx
-      result[0] = 2 * M_PI * std::sin(5 * M_PI * get_time()) *
-                  std::cos(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
-                  std::sin(4 * M_PI * p[2]);
+      result[0] = M_PI * std::cos(M_PI * p[0]) * std::cos(M_PI * p[1]);
 
       // duex / dy
-      result[1] = 3 * M_PI * std::sin(5 * M_PI * get_time()) *
-                  std::sin(2 * M_PI * p[0]) * std::cos(3 * M_PI * p[1]) *
-                  std::sin(4 * M_PI * p[2]);
+      result[1] = -M_PI * std::sin(M_PI * p[0]) * std::sin(M_PI * p[1]);
 
       // duex / dz
-      result[2] = 4 * M_PI * std::sin(5 * M_PI * get_time()) *
-                  std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
-                  std::cos(4 * M_PI * p[2]);
+      // result[2] = 4 * M_PI * std::sin(5 * M_PI * get_time()) *
+      //             std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
+      //             std::cos(4 * M_PI * p[2]);
 
       return result;
     }
