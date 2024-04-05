@@ -28,7 +28,7 @@
 #include <fstream>
 #include <iostream>
 
-#define NEUMANN
+//#define NEUMANN
 #define CONVERGENCE
 
 using namespace dealii;
@@ -76,9 +76,8 @@ public:
           double y = p[1];
           double pi = M_PI;
 
-          return 20 * std::pow(pi, 2) * std::pow(std::cos(pi * x), 2) * std::pow(std::cos(pi * y), 3) * std::sin(pi * x)
-                - 2 * std::pow(pi, 2) * std::cos(pi * y) * std::sin(pi * x) * (1 + 10 * std::pow(std::cos(pi * y), 2) * std::pow(std::sin(pi * x), 2))
-                + 20 * std::pow(pi, 2) * std::cos(pi * y) * std::pow(std::sin(pi * x), 3) * std::pow(std::sin(pi * y), 2);
+          return 20 * std::pow(pi, 2) * std::pow(std::cos(pi * x), 2) * std::sin(pi * x) 
+                 - std::pow(pi, 2) * std::sin(pi * x) * (1 + 10 * std::pow(std::sin(pi * x), 2));
     }
   };
 
@@ -107,9 +106,10 @@ public:
   public:
     virtual double
     value(const Point<dim> & p,
-          const unsigned int /*component*/ = 0) const override
+          const unsigned int component = 0) const override
     {
-      return std::sin(M_PI*p[0])*std::cos(M_PI*p[1]);
+      return std::sin(M_PI*p[0]);
+      // return 0.0;
     }
   };
 
@@ -119,9 +119,9 @@ public:
   public:
     virtual double
     value(const Point<dim> &p,
-          const unsigned int /*component*/ = 0) const override
+          const unsigned int component = 0) const override
     {
-      return std::sin(M_PI*p[0])*std::cos(M_PI*p[1]) ;
+      return std::sin(M_PI*p[0]);
     }
 
     virtual Tensor<1, dim>
@@ -131,10 +131,10 @@ public:
       Tensor<1, dim> result;
 
       // duex / dx
-      result[0] = M_PI * std::cos(M_PI * p[0]) * std::cos(M_PI * p[1]);
+      result[0] = M_PI * std::cos(M_PI * p[0]);
 
       // duex / dy
-      result[1] = -M_PI * std::sin(M_PI * p[0]) * std::sin(M_PI * p[1]);
+      result[1] = 0;
 
       // duex / dz
       // result[2] = 4 * M_PI * std::sin(5 * M_PI * get_time()) *

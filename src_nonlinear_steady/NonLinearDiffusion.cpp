@@ -219,7 +219,7 @@ NonLinearDiffusion::assemble_system()
 
                   for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
                     for (unsigned int i = 0; i < dofs_per_cell; ++i)
-                      cell_rhs(i) -=
+                      cell_rhs(i) +=
                         function_h.value(
                           fe_values_boundary.quadrature_point(q)) * // h(xq)
                         fe_values_boundary.shape_value(i, q) *      // v(xq)
@@ -247,6 +247,10 @@ NonLinearDiffusion::assemble_system()
     
     boundary_functions[0] = &zero_function;
     boundary_functions[1] = &zero_function;
+    boundary_functions[2] = &zero_function;
+    boundary_functions[3] = &zero_function;
+    // boundary_functions[4] = &zero_function;
+    // boundary_functions[5] = &zero_function;
 
 
 
@@ -262,7 +266,7 @@ NonLinearDiffusion::assemble_system()
 void
 NonLinearDiffusion::solve_system()
 {
-  SolverControl solver_control(1000, 1e-12 * residual_vector.l2_norm());
+  SolverControl solver_control(10000, 1e-12 * residual_vector.l2_norm());
 
   SolverGMRES<TrilinosWrappers::MPI::Vector> solver(solver_control);
   TrilinosWrappers::PreconditionSSOR         preconditioner;
@@ -279,7 +283,7 @@ NonLinearDiffusion::solve_newton()
 {
   pcout << "===============================================" << std::endl;
 
-  const unsigned int n_max_iters        = 1000;
+  const unsigned int n_max_iters        = 10000;
   const double       residual_tolerance = 1e-12;
 
   unsigned int n_iter        = 0;
@@ -289,6 +293,10 @@ NonLinearDiffusion::solve_newton()
     std::vector<bool> boundary_components(4, false); // Assuming there are 4 faces
     boundary_components[0] = true; // Face 0
     boundary_components[1] = true; // Face 1
+    boundary_components[2] = true; // Face 2
+    boundary_components[3] = true; // Face 3
+    // boundary_components[4] = true; // Face 4
+    // boundary_components[5] = true; // Face 5
 
     // Extract the DoFs on the specified faces
     IndexSet dirichlet_dofs = DoFTools::extract_boundary_dofs(

@@ -6,6 +6,9 @@
 
 #include <deal.II/distributed/fully_distributed_tria.h>
 
+#include <deal.II/fe/mapping_fe.h>
+
+
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 
@@ -27,12 +30,16 @@
 
 using namespace dealii;
 
+//#define NEUMANN
+#define CONVERGENCE
+
+
 // Class representing the non-linear diffusion problem.
 class NonLinearDiffusion
 {
 public:
   // Physical dimension (1D, 2D, 3D)
-  static constexpr unsigned int dim = 3;
+  static constexpr unsigned int dim = 2;
 
   // Function for the mu_0 coefficient.
   class FunctionMu0 : public Function<dim>
@@ -58,15 +65,86 @@ public:
     }
   };
 
-  // Function for the forcing term.
-  class ForcingTerm : public Function<dim>
+   class ForcingTerm : public Function<dim>
   {
   public:
     virtual double
-    value(const Point<dim> & /*p*/,
+    value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
+          double x = p[0];
+          double y = p[1];
+          double pi = M_PI;
+
+          return 20 * std::pow(pi, 2) * std::pow(std::cos(pi * x), 2) * std::pow(std::cos(pi * y), 3) * std::sin(pi * x)
+                - 2 * std::pow(pi, 2) * std::cos(pi * y) * std::sin(pi * x) * (1 + 10 * std::pow(std::cos(pi * y), 2) * std::pow(std::sin(pi * x), 2))
+                + 20 * std::pow(pi, 2) * std::cos(pi * y) * std::pow(std::sin(pi * x), 3) * std::pow(std::sin(pi * y), 2);
+          // return 1.0;
+    }
+  };
+
+
+  #ifdef NEUMANN
+  // Function for Neumann boundary conditions.
+  class FunctionH : public Function<dim>
+  {
+  public:
+    virtual double
+    value(const Point<dim> & p,
+          const unsigned int /*component*/ = 0) const override
+    { if(p[0]==0)
+        return -M_PI*(1.0+10.0 *std::sin(M_PI*p[0])*std::sin(M_PI*p[0])*std::cos(M_PI*p[1])*std::cos(M_PI*p[1]))*std::cos(M_PI*p[1]);
+      else if(p[0]==1)
+        return M_PI*(1.0+10.0 *std::sin(M_PI*p[0])*std::sin(M_PI*p[0])*std::cos(M_PI*p[1])*std::cos(M_PI*p[1]))*std::cos(M_PI*p[1]);
+
+        
+    }
+  };
+
+  #endif // NEUMANN
+
+    // Function for Dirichlet boundary conditions.
+  class FunctionG : public Function<dim>
+  {
+  public:
+    virtual double
+    value(const Point<dim> & p,
+          const unsigned int component = 0) const override
+    {
+      return std::sin(M_PI*p[0])*std::cos(M_PI*p[1]);
+      // return 0.0;
+    }
+  };
+
+     // Exact solution.
+  class ExactSolution : public Function<dim>
+  {
+  public:
+    virtual double
+    value(const Point<dim> &p,
+          const unsigned int component = 0) const override
+    {
+      return std::sin(M_PI*p[0])*std::cos(M_PI*p[1]) ;
+    }
+
+    virtual Tensor<1, dim>
+    gradient(const Point<dim> &p,
+             const unsigned int /*component*/ = 0) const override
+    {
+      Tensor<1, dim> result;
+
+      // duex / dx
+      result[0] = M_PI * std::cos(M_PI * p[0]) * std::cos(M_PI * p[1]);
+
+      // duex / dy
+      result[1] = -M_PI * std::sin(M_PI * p[0]) * std::sin(M_PI * p[1]);
+
+      // duex / dz
+      // result[2] = 4 * M_PI * std::sin(5 * M_PI * get_time()) *
+      //             std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
+      //             std::cos(4 * M_PI * p[2]);
+
+      return result;
     }
   };
 
@@ -91,6 +169,13 @@ public:
   // Output.
   void
   output() const;
+
+  #ifdef CONVERGENCE
+  // Compute the error.
+  double
+  compute_error(const VectorTools::NormType &norm_type);
+ 
+ #endif //CONVERGENCE
 
 protected:
   // Assemble the tangent problem.
@@ -122,6 +207,10 @@ protected:
 
   // Forcing term.
   ForcingTerm forcing_term;
+
+  FunctionG function_g;
+
+  ExactSolution exact_solution;
 
   // Discretization. ///////////////////////////////////////////////////////////
 

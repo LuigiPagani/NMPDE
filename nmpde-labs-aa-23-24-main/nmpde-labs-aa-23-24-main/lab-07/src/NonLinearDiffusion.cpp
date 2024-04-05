@@ -198,7 +198,7 @@ NonLinearDiffusion::assemble_system()
     std::map<types::boundary_id, const Function<dim> *> boundary_functions;
     Functions::ZeroFunction<dim>                        zero_function;
 
-    for (unsigned int i = 0; i < 6; ++i)
+    for (unsigned int i = 0; i < 4; ++i)
       boundary_functions[i] = &zero_function;
 
     VectorTools::interpolate_boundary_values(dof_handler,
@@ -213,7 +213,7 @@ NonLinearDiffusion::assemble_system()
 void
 NonLinearDiffusion::solve_system()
 {
-  SolverControl solver_control(1000, 1e-6 * residual_vector.l2_norm());
+  SolverControl solver_control(1000, 1e-9 * residual_vector.l2_norm());
 
   SolverGMRES<TrilinosWrappers::MPI::Vector> solver(solver_control);
   TrilinosWrappers::PreconditionSSOR         preconditioner;
@@ -231,10 +231,24 @@ NonLinearDiffusion::solve_newton()
   pcout << "===============================================" << std::endl;
 
   const unsigned int n_max_iters        = 1000;
-  const double       residual_tolerance = 1e-6;
+  const double       residual_tolerance = 1e-12;
 
   unsigned int n_iter        = 0;
   double       residual_norm = residual_tolerance + 1;
+
+     {
+    IndexSet dirichlet_dofs = DoFTools::extract_boundary_dofs(dof_handler);
+    dirichlet_dofs          = dirichlet_dofs & dof_handler.locally_owned_dofs();
+
+    TrilinosWrappers::MPI::Vector vector_dirichlet(solution_owned);
+    VectorTools::interpolate(dof_handler, function_g, vector_dirichlet);
+
+    for (const auto &idx : dirichlet_dofs)
+      solution_owned[idx] = vector_dirichlet[idx];
+
+    solution_owned.compress(VectorOperation::insert);
+    solution = solution_owned;
+  }
 
   while (n_iter < n_max_iters && residual_norm > residual_tolerance)
     {
@@ -288,3 +302,30 @@ NonLinearDiffusion::output() const
 
   pcout << "===============================================" << std::endl;
 }
+
+#ifdef CONVERGENCE
+double
+NonLinearDiffusion::compute_error(const VectorTools::NormType &norm_type)
+{
+  FE_SimplexP<dim> fe_linear(1);
+  MappingFE        mapping(fe_linear);
+
+  const QGaussSimplex<dim> quadrature_error = QGaussSimplex<dim>(r + 2);
+
+
+  Vector<double> error_per_cell;
+  VectorTools::integrate_difference(mapping,
+                                    dof_handler,
+                                    solution,
+                                    exact_solution,
+                                    error_per_cell,
+                                    quadrature_error,
+                                    norm_type);
+
+  const double error =
+    VectorTools::compute_global_error(mesh, error_per_cell, norm_type);
+
+  return error;
+}
+
+#endif //CONVERGENCE
