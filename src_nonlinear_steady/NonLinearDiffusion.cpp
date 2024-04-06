@@ -239,34 +239,34 @@ NonLinearDiffusion::assemble_system()
   residual_vector.compress(VectorOperation::add);
 
   // Boundary conditions.
-  {
-    std::map<types::global_dof_index, double> boundary_values;
+  // {
+  //   std::map<types::global_dof_index, double> boundary_values;
 
-    std::map<types::boundary_id, const Function<dim> *> boundary_functions;
-    Functions::ZeroFunction<dim>                        zero_function;
+  //   std::map<types::boundary_id, const Function<dim> *> boundary_functions;
+  //   Functions::ZeroFunction<dim>                        zero_function;
     
-    boundary_functions[0] = &zero_function;
-    boundary_functions[1] = &zero_function;
-    boundary_functions[2] = &zero_function;
-    boundary_functions[3] = &zero_function;
-    // boundary_functions[4] = &zero_function;
-    // boundary_functions[5] = &zero_function;
+  //   // boundary_functions[0] = &zero_function;
+  //   boundary_functions[1] = &zero_function;
+  //   boundary_functions[2] = &zero_function;
+  //   boundary_functions[3] = &zero_function;
+  //   boundary_functions[4] = &zero_function;
+  //   boundary_functions[5] = &zero_function;
 
 
 
-    VectorTools::interpolate_boundary_values(dof_handler,
-                                             boundary_functions,
-                                             boundary_values);
+  //   VectorTools::interpolate_boundary_values(dof_handler,
+  //                                            boundary_functions,
+  //                                            boundary_values);
 
-    MatrixTools::apply_boundary_values(
-      boundary_values, jacobian_matrix, delta_owned, residual_vector, true);
-  }
+  //   MatrixTools::apply_boundary_values(
+  //     boundary_values, jacobian_matrix, delta_owned, residual_vector, true);
+  // }
 }
 
 void
 NonLinearDiffusion::solve_system()
 {
-  SolverControl solver_control(10000, 1e-12 * residual_vector.l2_norm());
+  SolverControl solver_control(10000, 1e-6 * residual_vector.l2_norm());
 
   SolverGMRES<TrilinosWrappers::MPI::Vector> solver(solver_control);
   TrilinosWrappers::PreconditionSSOR         preconditioner;
@@ -284,36 +284,51 @@ NonLinearDiffusion::solve_newton()
   pcout << "===============================================" << std::endl;
 
   const unsigned int n_max_iters        = 10000;
-  const double       residual_tolerance = 1e-12;
+  const double       residual_tolerance = 1e-6;
 
   unsigned int n_iter        = 0;
   double       residual_norm = residual_tolerance + 1;
 
-    {
-    std::vector<bool> boundary_components(4, false); // Assuming there are 4 faces
-    boundary_components[0] = true; // Face 0
-    boundary_components[1] = true; // Face 1
-    boundary_components[2] = true; // Face 2
-    boundary_components[3] = true; // Face 3
+    // {
+    // std::vector<bool> boundary_components(4, false); // Assuming there are 4 faces
+    // boundary_components[0] = true; // Face 0
+    // boundary_components[1] = true; // Face 1
+    // boundary_components[2] = true; // Face 2
+    // boundary_components[3] = true; // Face 3
     // boundary_components[4] = true; // Face 4
     // boundary_components[5] = true; // Face 5
 
     // Extract the DoFs on the specified faces
-    IndexSet dirichlet_dofs = DoFTools::extract_boundary_dofs(
-      dof_handler,
-      ComponentMask(boundary_components)
-    );
-    dirichlet_dofs = dirichlet_dofs & dof_handler.locally_owned_dofs();
+  //   IndexSet dirichlet_dofs = DoFTools::extract_boundary_dofs(
+  //     dof_handler,
+  //     ComponentMask(boundary_components)
+  //   );
+  //   dirichlet_dofs = dirichlet_dofs & dof_handler.locally_owned_dofs();
 
-    TrilinosWrappers::MPI::Vector vector_dirichlet(solution_owned);
-    VectorTools::interpolate(dof_handler, function_g, vector_dirichlet);
+  //   TrilinosWrappers::MPI::Vector vector_dirichlet(solution_owned);
+  //   VectorTools::interpolate(dof_handler, function_g, vector_dirichlet);
 
-    for (const auto &idx : dirichlet_dofs)
-      solution_owned[idx] = vector_dirichlet[idx];
+  //   for (const auto &idx : dirichlet_dofs)
+  //     solution_owned[idx] = vector_dirichlet[idx];
 
-    solution_owned.compress(VectorOperation::insert);
-    solution = solution_owned;
-  }
+  //   solution_owned.compress(VectorOperation::insert);
+  //   solution = solution_owned;
+  // }
+
+   class InitialSolutionFunction : public Function<dim>
+  {
+  public:
+    virtual double value(const Point<dim> &p, const unsigned int component = 0) const override
+    {
+      (void)component;
+      return std::sin(M_PI * p[0]) + 1.0;
+    }
+  };
+
+  InitialSolutionFunction initial_solution_function;
+  VectorTools::interpolate(dof_handler, initial_solution_function, solution_owned);
+  solution = solution_owned;
+
 
   while (n_iter < n_max_iters && residual_norm > residual_tolerance)
     {

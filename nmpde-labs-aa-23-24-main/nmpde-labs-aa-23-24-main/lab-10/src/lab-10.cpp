@@ -21,7 +21,7 @@ main(int argc, char *argv[])
   unsigned int n_iter                  = 0;
 
   // Relaxation coefficient (1 = no relaxation).
-  const double lambda = 1.0;
+  const double lambda = 0.5;
 
   while (n_iter < n_max_iter && solution_increment_norm > tolerance_increment)
     {

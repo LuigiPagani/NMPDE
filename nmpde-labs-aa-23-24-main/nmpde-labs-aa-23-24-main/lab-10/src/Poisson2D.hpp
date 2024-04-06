@@ -20,6 +20,9 @@
 #include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/sparse_matrix.h>
 #include <deal.II/lac/vector.h>
+#include <deal.II/lac/trilinos_precondition.h>
+#include <deal.II/lac/solver_gmres.h>
+
 
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/matrix_tools.h>
@@ -30,6 +33,10 @@
 
 using namespace dealii;
 
+//#define CG
+#define TRANSPORT_COEFFICIENT
+#define REACTION_COEFFICIENT
+
 /**
  * Class managing the differential problem.
  */
@@ -38,6 +45,73 @@ class Poisson2D
 public:
   // Physical dimension (1D, 2D, 3D)
   static constexpr unsigned int dim = 2;
+
+  #ifdef TRANSPORT_COEFFICIENT
+  // transportin coefficient.
+  class TransportCoefficient : public Function<dim>
+  {
+  public:
+    virtual void
+    vector_value(const Point<dim> & /*p*/,
+                 Vector<double> &values) const override
+    {
+      for (unsigned int i = 0; i < dim - 1; ++i)
+      values[0] = 0.0;
+
+      values[1] = 2.0;
+    }
+
+    virtual double
+    value(const Point<dim> & /*p*/,
+          const unsigned int component = 0) const override
+    {
+      if (component == 0)
+        return 0.0;
+      else
+        return 2.0;
+    }
+
+  protected:
+    const double g = 0.5;
+  };
+#endif //TRANSPORT_COEFFICIENT
+
+  // Forcing term.
+  class ForcingTerm : public Function<dim>
+  {
+  public:
+    // Constructor.
+    ForcingTerm()
+    {}
+
+    // Evaluation.
+    virtual double
+    value(const Point<dim> &p,
+          const unsigned int /*component*/ = 0) const override
+    {
+      return 1.0;
+
+    }
+  };
+
+#ifdef REACTION_COEFFICIENT
+  // Reaction coefficient.
+  class ReactionCoefficient : public Function<dim>
+  {
+  public:
+    // Constructor.
+    ReactionCoefficient()
+    {}
+
+    // Evaluation.
+    virtual double
+    value(const Point<dim> & /*p*/,
+          const unsigned int /*component*/ = 0) const override
+    {
+      return 1.0;
+    }
+  };
+#endif //REACTION_COEFFICIENT
 
   // Constructor.
   Poisson2D(const unsigned int &subdomain_id_)
@@ -88,6 +162,20 @@ protected:
 
   // ID of current subdomain (0 or 1).
   const unsigned int subdomain_id;
+
+  #ifdef REACTION_COEFFICIENT
+
+  ReactionCoefficient reaction_coefficient;
+
+  #endif //REACTION_COEFFICIENT
+
+  #ifdef TRANSPORT_COEFFICIENT
+
+  TransportCoefficient transport_coefficient;
+
+  #endif //TRANSPORT_COEFFICIENT
+
+  ForcingTerm forcing_term;
 
   // Triangulation.
   Triangulation<dim> mesh;

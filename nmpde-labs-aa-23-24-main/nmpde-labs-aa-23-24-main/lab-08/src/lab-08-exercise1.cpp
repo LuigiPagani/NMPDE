@@ -10,7 +10,7 @@ main(int argc, char *argv[])
   const unsigned int               mpi_rank =
     Utilities::MPI::this_mpi_process(MPI_COMM_WORLD);
 
-  const unsigned int degree = 1;
+  const unsigned int degree = 2;
 
   const double T     = 1.0;
   const double theta = 0.5;

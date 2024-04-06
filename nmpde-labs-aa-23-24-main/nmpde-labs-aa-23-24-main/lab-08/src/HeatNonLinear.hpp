@@ -30,6 +30,8 @@
 
 using namespace dealii;
 
+#define NEUMANN
+
 // Class representing the non-linear diffusion problem.
 class HeatNonLinear
 {
@@ -88,6 +90,31 @@ public:
     }
   };
 
+       class FunctionH : public Function<dim>
+{
+public:
+    FunctionH() : Function<dim>() {}
+    virtual double value(const Point<dim> & p, const unsigned int /*component*/ = 0) const override
+    {
+        double t = 0.0; // replace with your time variable
+        double uex = std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]);
+        double scalar = 1.0 + 10.0 * uex * uex;
+        if (p[0] == 0.0)
+            return -1.0 * scalar * (2 * M_PI * std::cos(2 * M_PI * p[0]) * std::sin(5 * M_PI * t) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]));
+        else if (p[0] == 1.0)
+            return 1.0 * scalar * (2 * M_PI * std::cos(2 * M_PI * p[0]) * std::sin(5 * M_PI * t) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]));
+        else if (p[1] == 0.0)
+            return -1.0 * scalar * (3 * M_PI * std::cos(3 * M_PI * p[1]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(4 * M_PI * p[2]));
+        else if (p[1] == 1.0)
+            return 1.0 * scalar * (3 * M_PI * std::cos(3 * M_PI * p[1]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(4 * M_PI * p[2]));
+        else if (p[2] == 0.0)
+            return -1.0 * scalar * (4 * M_PI * std::cos(4 * M_PI * p[2]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]));
+        else if (p[2] == 1.0)
+            return 1.0 * scalar * (4 * M_PI * std::cos(4 * M_PI * p[2]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]));
+        else
+            return 0.0;
+    }
+};
   // Function for initial conditions.
   class FunctionU0 : public Function<dim>
   {
@@ -165,6 +192,16 @@ protected:
 
   // Dirichlet boundary conditions.
   FunctionG function_g;
+
+
+
+  #ifdef NEUMANN
+  // Quadrature formula used on boundary lines.
+  std::unique_ptr<Quadrature<dim - 1>> quadrature_boundary;
+
+  // h(x).
+  FunctionH function_h;
+#endif //NEUMANN
 
   // Initial conditions.
   FunctionU0 u_0;

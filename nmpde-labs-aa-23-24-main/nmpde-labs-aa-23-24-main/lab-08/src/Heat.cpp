@@ -40,6 +40,12 @@ Heat::setup()
 
     pcout << "  Quadrature points per cell = " << quadrature->size()
           << std::endl;
+   #ifdef NEUMANN
+    quadrature_boundary = std::make_unique<QGaussSimplex<dim - 1>>(r + 1);
+
+    std::cout << "  Quadrature points per boundary cell = "
+              << quadrature_boundary->size() << std::endl;
+#endif //NEUMANN
   }
 
   pcout << "-----------------------------------------------" << std::endl;
@@ -92,6 +98,8 @@ Heat::assemble_matrices()
 
   const unsigned int dofs_per_cell = fe->dofs_per_cell;
   const unsigned int n_q           = quadrature->size();
+ 
+
 
   FEValues<dim> fe_values(*fe,
                           *quadrature,
@@ -162,6 +170,17 @@ Heat::assemble_rhs(const double &time)
   const unsigned int dofs_per_cell = fe->dofs_per_cell;
   const unsigned int n_q           = quadrature->size();
 
+   #ifdef NEUMANN
+  // Since we need to compute integrals on the boundary for Neumann conditions,
+  // we also need a FEValues object to compute quantities on boundary edges
+  // (faces).
+  FEFaceValues<dim> fe_values_boundary(*fe,
+                                       *quadrature_boundary,
+                                       update_values |
+                                         update_quadrature_points |
+                                         update_JxW_values);
+#endif //NEUMANN
+
   FEValues<dim> fe_values(*fe,
                           *quadrature,
                           update_values | update_quadrature_points |
@@ -204,6 +223,40 @@ Heat::assemble_rhs(const double &time)
                              fe_values.shape_value(i, q) * fe_values.JxW(q);
             }
         }
+
+        #ifdef NEUMANN
+      // If the cell is adjacent to the boundary...
+      if (cell->at_boundary())
+        {
+          // ...we loop over its edges (referred to as faces in the deal.II
+          // jargon).
+          for (unsigned int face_number = 0; face_number < cell->n_faces();
+               ++face_number)
+            {
+              // If current face lies on the boundary, and its boundary ID (or
+              // tag) is that of one of the Neumann boundaries, we assemble the
+              // boundary integral.
+              if (cell->face(face_number)->at_boundary() &&
+                  (cell->face(face_number)->boundary_id() == 1)||
+                  (cell->face(face_number)->boundary_id() == 2)||
+                  (cell->face(face_number)->boundary_id() == 3)||
+                  (cell->face(face_number)->boundary_id() == 4)||
+                  (cell->face(face_number)->boundary_id() == 5)||
+                  (cell->face(face_number)->boundary_id() == 0))
+                {
+                  fe_values_boundary.reinit(cell, face_number);
+
+                  for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
+                    for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                      cell_rhs(i) +=
+                        function_h.value(
+                          fe_values_boundary.quadrature_point(q)) * // h(xq)
+                        fe_values_boundary.shape_value(i, q) *      // v(xq)
+                        fe_values_boundary.JxW(q);                  // Jq wq
+                }
+            }
+        }
+#endif //NEUMANN
 
       cell->get_dof_indices(dof_indices);
       system_rhs.add(dof_indices, cell_rhs);

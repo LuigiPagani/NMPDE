@@ -28,7 +28,7 @@
 #include <fstream>
 #include <iostream>
 
-//#define NEUMANN
+#define NEUMANN
 #define CONVERGENCE
 
 using namespace dealii;
@@ -76,27 +76,37 @@ public:
           double y = p[1];
           double pi = M_PI;
 
-          return 20 * std::pow(pi, 2) * std::pow(std::cos(pi * x), 2) * std::sin(pi * x) 
-                 - std::pow(pi, 2) * std::sin(pi * x) * (1 + 10 * std::pow(std::sin(pi * x), 2));
+          return  20 * std::pow(pi, 2) * std::pow(std::cos(pi * x), 2) * std::sin(pi * x) 
+                  - std::pow(pi, 2) * std::sin(pi * x) * (1 + 10 * std::pow(std::sin(pi * x), 2));
     }
   };
 
   #ifdef NEUMANN
   // Function for Neumann boundary conditions.
-  class FunctionH : public Function<dim>
-  {
-  public:
-    virtual double
-    value(const Point<dim> & p,
-          const unsigned int /*component*/ = 0) const override
-    { if(p[0]==0)
-        return -M_PI*(1.0+10.0 *std::sin(M_PI*p[0])*std::sin(M_PI*p[0])*std::cos(M_PI*p[1])*std::cos(M_PI*p[1]))*std::cos(M_PI*p[1]);
-      else if(p[0]==1)
-        return M_PI*(1.0+10.0 *std::sin(M_PI*p[0])*std::sin(M_PI*p[0])*std::cos(M_PI*p[1])*std::cos(M_PI*p[1]))*std::cos(M_PI*p[1]);
+class FunctionH : public Function<dim>
+{
+public:
+    FunctionH() : Function<dim>() {}
+    virtual double value(const Point<dim> & p, const unsigned int component = 0) const override
+    {
+        double t = get_time(); // replace with your time variable
 
-        
+            if (p[0] == 0.0)
+                return -1.0 * (2 * M_PI * std::cos(2 * M_PI * p[0]) * std::sin(5 * M_PI * t) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else if (p[0] == 1.0)
+                return 1.0 * (2 * M_PI * std::cos(2 * M_PI * p[0]) * std::sin(5 * M_PI * t) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else if (p[1] == 0.0)
+                return -1.0 * (3 * M_PI * std::cos(3 * M_PI * p[1]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(4 * M_PI * p[2]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else if (p[1] == 1.0)
+                return 1.0 * (3 * M_PI * std::cos(3 * M_PI * p[1]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(4 * M_PI * p[2]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else if (p[2] == 0.0)
+                return -1.0 * (4 * M_PI * std::cos(4 * M_PI * p[2]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else if (p[2] == 1.0)
+                return 1.0 * (4 * M_PI * std::cos(4 * M_PI * p[2]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else
+                return 0.0;
     }
-  };
+};
 
   #endif // NEUMANN
 

@@ -29,6 +29,7 @@
 #include <iostream>
 
 using namespace dealii;
+#define NEUMANN
 
 // Class representing the non-linear diffusion problem.
 class Heat
@@ -63,6 +64,33 @@ public:
              std::sin(4 * M_PI * p[2]);
     }
   };
+
+  class FunctionH : public Function<dim>
+{
+public:
+    FunctionH() : Function<dim>() {}
+    virtual double value(const Point<dim> & p, const unsigned int /*component*/ = 0) const override
+    {
+        double t = get_time(); // replace with your time variable
+        double x = p[0];
+        double y = p[1];
+        double z = p[2];
+        if (p[0] == 0) {
+            return -2.0 * M_PI * cos(2.0 * M_PI * x) * sin(5.0 * M_PI * t) * sin(3.0 * M_PI * y) * sin(4.0 * M_PI * z) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
+        } else if (p[0] == 1) {
+            return 2.0 * M_PI * cos(2.0 * M_PI * x) * sin(5.0 * M_PI * t) * sin(3.0 * M_PI * y) * sin(4.0 * M_PI * z) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
+        } else if (p[1] == 0) {
+            return -3.0 * M_PI * cos(3.0 * M_PI * y) * sin(5.0 * M_PI * t) * sin(2.0 * M_PI * x) * sin(4.0 * M_PI * z) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
+        } else if (p[1] == 1) {
+            return 3.0 * M_PI * cos(3.0 * M_PI * y) * sin(5.0 * M_PI * t) * sin(2.0 * M_PI * x) * sin(4.0 * M_PI * z) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
+        } else if (p[2] == 0) {
+            return -4.0 * M_PI * cos(4.0 * M_PI * z) * sin(5.0 * M_PI * t) * sin(2.0 * M_PI * x) * sin(3.0 * M_PI * y) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
+        } else if (p[2] == 1) {
+            return 4.0 * M_PI * cos(4.0 * M_PI * z) * sin(5.0 * M_PI * t) * sin(2.0 * M_PI * x) * sin(3.0 * M_PI * y) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
+        }
+        return 0;
+    }
+};
 
   // Exact solution.
   class ExactSolution : public Function<dim>
@@ -169,6 +197,15 @@ protected:
 
   // Exact solution.
   ExactSolution exact_solution;
+
+    #ifdef NEUMANN
+  // Quadrature formula used on boundary lines.
+  std::unique_ptr<Quadrature<dim - 1>> quadrature_boundary;
+
+  // h(x).
+  FunctionH function_h;
+#endif //NEUMANN
+
 
   // Current time.
   double time;

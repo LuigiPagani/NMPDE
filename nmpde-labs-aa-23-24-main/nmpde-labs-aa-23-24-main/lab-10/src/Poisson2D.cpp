@@ -69,8 +69,20 @@ Poisson2D::assemble()
       cell_matrix = 0.0;
       cell_rhs    = 0.0;
 
+      
+
       for (unsigned int q = 0; q < n_q; ++q)
         {
+          #ifdef TRANSPORT_COEFFICIENT
+          Vector<double> transport_coefficient_loc(dim);
+          transport_coefficient.vector_value(fe_values.quadrature_point(q),
+                                    transport_coefficient_loc);
+
+          Tensor<1, dim> transport_coefficient_tensor;
+          for (unsigned int d = 0; d < dim; ++d)
+            transport_coefficient_tensor[d] = transport_coefficient_loc[d];
+#endif
+
           for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
               for (unsigned int j = 0; j < dofs_per_cell; ++j)
@@ -78,7 +90,25 @@ Poisson2D::assemble()
                   cell_matrix(i, j) += fe_values.shape_grad(i, q) *
                                        fe_values.shape_grad(j, q) *
                                        fe_values.JxW(q);
+                  #ifdef TRANSPORT_COEFFICIENT
+                  cell_matrix(i, j) += scalar_product(transport_coefficient_tensor,
+                                                      fe_values.shape_grad(j,q))
+                                    * fe_values.shape_value(i,q)
+                                    * fe_values.JxW(q);
+                  #endif //TRANSPORT_COEFFICIENT
+
+#ifdef REACTION_COEFFICIENT
+                  cell_matrix(i, j) +=
+                    reaction_coefficient.value(
+                      fe_values.quadrature_point(q)) * // sigma(x)
+                    fe_values.shape_value(i, q) *      // phi_i
+                    fe_values.shape_value(j, q) *      // phi_j
+                    fe_values.JxW(q);                  // dx
+#endif //REACTION_COEFFICIENT
                 }
+
+                              cell_rhs(i) += forcing_term.value(fe_values.quadrature_point(q)) *
+                             fe_values.shape_value(i, q) * fe_values.JxW(q);
             }
         }
 
@@ -108,10 +138,44 @@ Poisson2D::assemble()
 void
 Poisson2D::solve()
 {
-  SolverControl            solver_control(1000, 1e-12 * system_rhs.l2_norm());
+  #ifdef CG
+  std::cout << "===============================================" << std::endl;
+
+  SolverControl solver_control(10000,  1e-6 * system_rhs.l2_norm() );
+
+  // Since the system matrix is symmetric and positive definite, we solve the
+  // system using the conjugate gradient method.
   SolverCG<Vector<double>> solver(solver_control);
 
+  PreconditionSSOR preconditioner;
+  preconditioner.initialize(
+    system_matrix, PreconditionSOR<SparseMatrix<double>>::AdditionalData(1.0));
+
   solver.solve(system_matrix, solution, system_rhs, PreconditionIdentity());
+  std::cout << "  " << solver_control.last_step() << " CG iterations"
+            << std::endl;
+  
+  #endif //CG
+#ifndef CG
+  // Here we specify the maximum number of iterations of the iterative solver,
+  // and its tolerance.
+  SolverControl solver_control(5000, 1.0e-12*system_rhs.l2_norm());
+
+  // Since the system matrix is symmetric and positive definite, we solve the
+  // system using the conjugate gradient method.
+  SolverGMRES<Vector<double>> solver(solver_control);
+  PreconditionSOR preconditioner;
+  preconditioner.initialize(
+    system_matrix
+  );
+
+  std::cout << "  Solving the linear system" << std::endl;
+  // We don't use any preconditioner for now, so we pass the identity matrix
+  // as preconditioner.
+  solver.solve(system_matrix, solution, system_rhs, preconditioner);
+  std::cout << "  " << solver_control.last_step() << " GMRES iterations"
+            << std::endl;
+ #endif
 }
 
 void

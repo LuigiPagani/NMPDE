@@ -32,9 +32,9 @@ using namespace dealii;
 
 // Class representing the non-linear diffusion problem.
 class HeatNonLinear
-#define NEUMANN
+//#define NEUMANN
 #define CONVERGENCE
-#define SPATIAL_CONVERGENCE
+//#define SPATIAL_CONVERGENCE
 
 {
 public:
@@ -135,10 +135,25 @@ public:
   {
   public:
     virtual double
-    value(const Point<dim> & /*p*/,
+    value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 0.0;
+       double t = get_time(); // replace with your time variable
+
+            if (p[0] == 0.0)
+                return -1.0 * (2 * M_PI * std::cos(2 * M_PI * p[0]) * std::sin(5 * M_PI * t) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else if (p[0] == 1.0)
+                return 1.0 * (2 * M_PI * std::cos(2 * M_PI * p[0]) * std::sin(5 * M_PI * t) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else if (p[1] == 0.0)
+                return -1.0 * (3 * M_PI * std::cos(3 * M_PI * p[1]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(4 * M_PI * p[2]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else if (p[1] == 1.0)
+                return 1.0 * (3 * M_PI * std::cos(3 * M_PI * p[1]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(4 * M_PI * p[2]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else if (p[2] == 0.0)
+                return -1.0 * (4 * M_PI * std::cos(4 * M_PI * p[2]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else if (p[2] == 1.0)
+                return 1.0 * (4 * M_PI * std::cos(4 * M_PI * p[2]) * std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * (1.0 + 10.0 * std::pow(std::sin(5 * M_PI * t) * std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]), 2)));
+            else
+                return 0.0;
     }
   };
 

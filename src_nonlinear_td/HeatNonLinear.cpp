@@ -209,13 +209,18 @@ HeatNonLinear::assemble_system()
               // tag) is that of one of the Neumann boundaries, we assemble the
               // boundary integral.
               if (cell->face(face_number)->at_boundary() &&
-                  (cell->face(face_number)->boundary_id() == 1))
+                  (cell->face(face_number)->boundary_id() == 1)||
+                  (cell->face(face_number)->boundary_id() == 2)||
+                  (cell->face(face_number)->boundary_id() == 3)||
+                  (cell->face(face_number)->boundary_id() == 4)||
+                  (cell->face(face_number)->boundary_id() == 5)||
+                  (cell->face(face_number)->boundary_id() == 0))
                 {
                   fe_values_boundary.reinit(cell, face_number);
 
                   for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
                     for (unsigned int i = 0; i < dofs_per_cell; ++i)
-                      cell_residual(i) -=
+                      cell_residual(i) +=
                         function_h.value(
                           fe_values_boundary.quadrature_point(q)) * // h(xq)
                         fe_values_boundary.shape_value(i, q) *      // v(xq)
@@ -283,21 +288,21 @@ HeatNonLinear::solve_newton()
 
   // We apply the boundary conditions to the initial guess (which is stored in
   // solution_owned and solution).
-  {
-    IndexSet dirichlet_dofs = DoFTools::extract_boundary_dofs(dof_handler);
-    dirichlet_dofs          = dirichlet_dofs & dof_handler.locally_owned_dofs();
+  // {
+  //   IndexSet dirichlet_dofs = DoFTools::extract_boundary_dofs(dof_handler);
+  //   dirichlet_dofs          = dirichlet_dofs & dof_handler.locally_owned_dofs();
 
-    function_g.set_time(time);
+  //   function_g.set_time(time);
 
-    TrilinosWrappers::MPI::Vector vector_dirichlet(solution_owned);
-    VectorTools::interpolate(dof_handler, function_g, vector_dirichlet);
+  //   TrilinosWrappers::MPI::Vector vector_dirichlet(solution_owned);
+  //   VectorTools::interpolate(dof_handler, function_g, vector_dirichlet);
 
-    for (const auto &idx : dirichlet_dofs)
-      solution_owned[idx] = vector_dirichlet[idx];
+  //   for (const auto &idx : dirichlet_dofs)
+  //     solution_owned[idx] = vector_dirichlet[idx];
 
-    solution_owned.compress(VectorOperation::insert);
-    solution = solution_owned;
-  }
+  //   solution_owned.compress(VectorOperation::insert);
+  //   solution = solution_owned;
+  // }
 
   while (n_iter < n_max_iters && residual_norm > residual_tolerance)
     {

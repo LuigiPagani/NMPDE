@@ -32,7 +32,7 @@
 #include <iostream>
 
 #define NEUMANN
-#define GMRES
+#define CG
 //#define CONVERGENCE
 //#define TRANSPORT_COEFFICIENT
 //#define REACTION_COEFFICIENT

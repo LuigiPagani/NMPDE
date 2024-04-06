@@ -213,7 +213,7 @@ NonLinearDiffusion::assemble_system()
 void
 NonLinearDiffusion::solve_system()
 {
-  SolverControl solver_control(1000, 1e-9 * residual_vector.l2_norm());
+  SolverControl solver_control(1000, 1e-6 * residual_vector.l2_norm());
 
   SolverGMRES<TrilinosWrappers::MPI::Vector> solver(solver_control);
   TrilinosWrappers::PreconditionSSOR         preconditioner;
@@ -231,14 +231,25 @@ NonLinearDiffusion::solve_newton()
   pcout << "===============================================" << std::endl;
 
   const unsigned int n_max_iters        = 1000;
-  const double       residual_tolerance = 1e-12;
+  const double       residual_tolerance = 1e-6;
 
   unsigned int n_iter        = 0;
   double       residual_norm = residual_tolerance + 1;
+  
+//   class InitialGuessFunction : public Function<dim>
+// {
+// public:
+//   virtual double value(const Point<dim> &p, const unsigned int component = 0) const override
+//   {
+//     (void)component;
+//     return 0.0;
+//   }
+// };
 
-     {
+  {
     IndexSet dirichlet_dofs = DoFTools::extract_boundary_dofs(dof_handler);
     dirichlet_dofs          = dirichlet_dofs & dof_handler.locally_owned_dofs();
+
 
     TrilinosWrappers::MPI::Vector vector_dirichlet(solution_owned);
     VectorTools::interpolate(dof_handler, function_g, vector_dirichlet);
@@ -302,30 +313,3 @@ NonLinearDiffusion::output() const
 
   pcout << "===============================================" << std::endl;
 }
-
-#ifdef CONVERGENCE
-double
-NonLinearDiffusion::compute_error(const VectorTools::NormType &norm_type)
-{
-  FE_SimplexP<dim> fe_linear(1);
-  MappingFE        mapping(fe_linear);
-
-  const QGaussSimplex<dim> quadrature_error = QGaussSimplex<dim>(r + 2);
-
-
-  Vector<double> error_per_cell;
-  VectorTools::integrate_difference(mapping,
-                                    dof_handler,
-                                    solution,
-                                    exact_solution,
-                                    error_per_cell,
-                                    quadrature_error,
-                                    norm_type);
-
-  const double error =
-    VectorTools::compute_global_error(mesh, error_per_cell, norm_type);
-
-  return error;
-}
-
-#endif //CONVERGENCE
