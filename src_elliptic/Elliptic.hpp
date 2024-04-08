@@ -31,11 +31,11 @@
 #include <fstream>
 #include <iostream>
 
-#define NEUMANN
-#define CG
+//#define NEUMANN
+//#define CG
 //#define CONVERGENCE
-//#define TRANSPORT_COEFFICIENT
-//#define REACTION_COEFFICIENT
+#define TRANSPORT_COEFFICIENT
+#define REACTION_COEFFICIENT
 
 
 using namespace dealii;
@@ -129,7 +129,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return -5.0;
+      return 1.0;
 
     }
   };

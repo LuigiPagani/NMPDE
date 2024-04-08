@@ -36,6 +36,7 @@ using namespace dealii;
 //#define CG
 #define TRANSPORT_COEFFICIENT
 #define REACTION_COEFFICIENT
+#define NEUMANN
 
 /**
  * Class managing the differential problem.
@@ -188,6 +189,13 @@ protected:
 
   // Quadrature formula.
   std::unique_ptr<Quadrature<dim>> quadrature;
+
+  #ifdef NEUMANN
+
+  std::unique_ptr<Quadrature<dim - 1>> quadrature_boundary;
+
+  #endif //NEUMANN
+
 
   // DoF handler.
   DoFHandler<dim> dof_handler;

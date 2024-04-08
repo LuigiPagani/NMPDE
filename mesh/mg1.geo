@@ -1,16 +1,16 @@
-Lx = 0.75; // Rectangle length along x-axis.
+Lx = 0.25; // Rectangle length along x-axis.
 Ly = 1.0; // Rectangle length along y-axis.
 h = 0.0125; // Mesh size.
 
-// Create one point in the origin.
-Point(1) = {0, 0, 0, h};
+// Create one point at (0.75, 0).
+Point(1) = {0.75, 0, 0, h};
 
 // Extrude the point along x to create one side. The Layers option indicates the 
 // number of mesh subdivisions along the extrusion.
-Extrude {1, 0, 0} { Point{1}; Layers{Lx / h}; }
+Extrude {Lx, 0, 0} { Point{1}; Layers{Round(Lx / h)}; }
 
 // Extrude that side along y to create the rectangle.
-Extrude {0, 1, 0} { Line{1};  Layers{Ly / h}; }
+Extrude {0, Ly, 0} { Line{1};  Layers{Round(Ly / h)}; }
 
 // Define the tags.
 Physical Line(0) = {3};
@@ -25,4 +25,4 @@ Mesh 2;
 
 // Save mesh to file.
 str_h = Sprintf("%f", h);
-Save StrCat("mesh-h", str_h, ".msh");
+Save StrCat("m1", ".msh");
