@@ -8,7 +8,7 @@ Poisson2D::setup()
     GridIn<dim> grid_in;
     grid_in.attach_triangulation(mesh);
 
-    std::ifstream grid_in_file("../mesh/mesh-problem-" +
+    std::ifstream grid_in_file("../mesh/m" +
                                std::to_string(subdomain_id) + ".msh");
 
     grid_in.read_msh(grid_in_file);

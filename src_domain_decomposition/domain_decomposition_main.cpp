@@ -21,9 +21,7 @@ main(int argc, char *argv[])
   unsigned int n_iter                  = 0;
 
   // Relaxation coefficient (1 = no relaxation).
-  const double lambda = 1.0;
-
-  #ifdef DN
+  const double lambda = 0.5;
 
   while (n_iter < n_max_iter && solution_increment_norm > tolerance_increment)
     {
@@ -51,38 +49,6 @@ main(int argc, char *argv[])
 
       ++n_iter;
     }
-
-    #else
-
-   while (n_iter < n_max_iter && solution_increment_norm > tolerance_increment)
-    {
-      auto solution_0_increment = problem_0.get_solution();
-
-      problem_1.assemble();
-      problem_1.apply_interface_neumann(problem_0); // Inverted
-      problem_1.solve();
-
-      problem_0.assemble();
-      problem_0.apply_interface_dirichlet(problem_1); // Inverted
-      problem_0.solve();
-
-      problem_0.apply_relaxation(solution_0_increment, lambda); // Inverted
-
-      solution_0_increment -= problem_0.get_solution(); // Inverted
-      solution_increment_norm = solution_0_increment.l2_norm(); // Inverted
-
-      std::cout << "iteration " << n_iter
-                << " - solution increment = " << solution_increment_norm
-                << std::endl;
-
-      problem_0.output(n_iter);
-      problem_1.output(n_iter);
-
-      ++n_iter;
-    }
-
-    #endif
-
 
   return 0;
 }
