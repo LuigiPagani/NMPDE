@@ -106,8 +106,10 @@ Poisson2D::assemble()
             {
               for (unsigned int j = 0; j < dofs_per_cell; ++j)
                 {
-                  cell_matrix(i, j) += fe_values.shape_grad(i, q) *
-                                       fe_values.shape_grad(j, q) *
+                  cell_matrix(i, j) += diffusion_coefficient.value(
+                                       fe_values.quadrature_point(q))*
+                                       fe_values.shape_grad(i, q)    *
+                                       fe_values.shape_grad(j, q)    *
                                        fe_values.JxW(q);
                   #ifdef TRANSPORT_COEFFICIENT
                   cell_matrix(i, j) += scalar_product(transport_coefficient_tensor,
@@ -179,24 +181,24 @@ Poisson2D::assemble()
   // Define boundary functions for each face of each subdomain.
   Functions::ConstantFunction<dim> function_bc_0(0);
   Functions::ConstantFunction<dim> function_bc_1(0);
-  Functions::ConstantFunction<dim> function_bc_2(1);
+  Functions::ConstantFunction<dim> function_bc_2(0);
   Functions::ConstantFunction<dim> function_bc_3(0);
   Functions::ConstantFunction<dim> function_bc_4(0);
   Functions::ConstantFunction<dim> function_bc_5(0);
-  Functions::ConstantFunction<dim> function_bc_6(1);
+  Functions::ConstantFunction<dim> function_bc_6(0);
   Functions::ConstantFunction<dim> function_bc_7(0);
 
   // Assign the boundary functions to the faces of the subdomain.
   if (subdomain_id == 0) {
-    //boundary_functions[0] = &function_bc_0; // Face 0
+    boundary_functions[0] = &function_bc_0; // Face 0
     //boundary_functions[1] = &function_bc_1; // Face 1
-    boundary_functions[2] = &function_bc_2; // Face 2
-    boundary_functions[3] = &function_bc_3; // Face 3
+    //boundary_functions[2] = &function_bc_2; // Face 2
+    //boundary_functions[3] = &function_bc_3; // Face 3
   } else {
     //boundary_functions[0] = &function_bc_4; // Face 0
-    //boundary_functions[1] = &function_bc_5; // Face 1
-    boundary_functions[2] = &function_bc_6; // Face 2
-    boundary_functions[3] = &function_bc_7; // Face 3
+    boundary_functions[1] = &function_bc_5; // Face 1
+    //boundary_functions[2] = &function_bc_6; // Face 2
+    //boundary_functions[3] = &function_bc_7; // Face 3
   }
 
   // interpolate_boundary_values fills the boundary_values map.

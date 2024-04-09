@@ -1,4 +1,4 @@
-L = 0.25; // Line length.
+L = 0.75; // Line length.
 h = 0.0125; // Mesh size.
 
 // Create one point at (0, 0, 0).

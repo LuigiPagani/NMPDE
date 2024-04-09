@@ -34,10 +34,10 @@
 
 using namespace dealii;
 
-//#define CG
+#define CG
 //#define TRANSPORT_COEFFICIENT
-#define REACTION_COEFFICIENT
-#define NEUMANN
+//#define REACTION_COEFFICIENT
+//#define NEUMANN
 
 /**
  * Class managing the differential problem.
@@ -47,6 +47,24 @@ class Poisson2D
 public:
   // Physical dimension (1D, 2D, 3D)
   static constexpr unsigned int dim = 1;
+
+
+    // Diffusion coefficient
+  class DiffusionCoefficient : public Function<dim>
+  {
+  public:
+    // Constructor.
+    DiffusionCoefficient()
+    {}
+
+    // Evaluation.
+    virtual double
+    value(const Point<dim> & p, const unsigned int component = 0) const
+    {
+       return 1.0;
+      
+    }
+  };
 
   #ifdef TRANSPORT_COEFFICIENT
   // transportin coefficient.
@@ -91,8 +109,10 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
-
+     if(p[0] <= 0.25 && p[0]>0.125)
+      return -1;
+      else
+      return 0.0;
     }
   };
 
@@ -188,6 +208,8 @@ protected:
 
   // ID of current subdomain (0 or 1).
   const unsigned int subdomain_id;
+
+  DiffusionCoefficient diffusion_coefficient;
 
   #ifdef REACTION_COEFFICIENT
 
