@@ -211,34 +211,46 @@ Elliptic::assemble()
         }
 
 #ifdef NEUMANN
-      // If the cell is adjacent to the boundary...
-      if (cell->at_boundary())
+  // If the cell is adjacent to the boundary...
+  if (cell->at_boundary())
+    {
+      // ...we loop over its edges (referred to as faces in the deal.II
+      // jargon).
+      for (unsigned int face_number = 0; face_number < cell->n_faces();
+           ++face_number)
         {
-          // ...we loop over its edges (referred to as faces in the deal.II
-          // jargon).
-          for (unsigned int face_number = 0; face_number < cell->n_faces();
-               ++face_number)
+          // If current face lies on the boundary, and its boundary ID (or
+          // tag) is that of one of the Neumann boundaries, we assemble the
+          // boundary integral.
+          if (cell->face(face_number)->at_boundary() &&
+              (cell->face(face_number)->boundary_id() == 0 ||
+               cell->face(face_number)->boundary_id() == 1))
             {
-              // If current face lies on the boundary, and its boundary ID (or
-              // tag) is that of one of the Neumann boundaries, we assemble the
-              // boundary integral.
-              if (cell->face(face_number)->at_boundary() &&
-                  (cell->face(face_number)->boundary_id() == 0 ||
-                   cell->face(face_number)->boundary_id() == 1))
-                {
-                  fe_values_boundary.reinit(cell, face_number);
+              fe_values_boundary.reinit(cell, face_number);
 
-                  for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
-                    for (unsigned int i = 0; i < dofs_per_cell; ++i)
-                      cell_rhs(i) +=
-                        function_h.value(
-                        fe_values_boundary.quadrature_point(q)) * // h(xq)
-                        fe_values_boundary.shape_value(i, q) *      // v(xq)
-                        fe_values_boundary.JxW(q);                  // Jq wq
+              for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                {
+                  #ifdef ROBIN
+                  for (unsigned int j = 0; j < dofs_per_cell; ++j){
+                    cell_matrix(i, j) -=
+                     function_gamma.value(fe_values_boundary.quadrature_point(q)) * 
+                     fe_values_boundary.shape_value(j, q) *
+                     fe_values_boundary.shape_value(i, q) * 
+                     fe_values_boundary.JxW(q);  
+                  }        
+                  #endif //ROBIN
+                  cell_rhs(i) +=
+                  function_h.value(
+                  fe_values_boundary.quadrature_point(q)) * // h(xq)
+                  fe_values_boundary.shape_value(i, q) *      // v(xq)
+                  fe_values_boundary.JxW(q);                  // Jq wq
                 }
             }
         }
+    }
 #endif //NEUMANN
+
 
       // At this point the local matrix and vector are constructed: we
       // need to sum them into the global matrix and vector. To this end,

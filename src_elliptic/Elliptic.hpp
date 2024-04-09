@@ -31,7 +31,8 @@
 #include <fstream>
 #include <iostream>
 
-#define NEUMANN
+//#define NEUMANN
+//#define ROBIN
 //#define CG
 //#define CONVERGENCE
 #define TRANSPORT_COEFFICIENT
@@ -133,6 +134,28 @@ public:
 
     }
   };
+
+#ifdef ROBIN
+    // Forcing term.
+  class FunctionGamma : public Function<dim>
+  {
+  public:
+    // Constructor.
+    FunctionGamma()
+    {}
+
+    // Evaluation.
+    virtual double
+    value(const Point<dim> &p,
+          const unsigned int /*component*/ = 0) const override
+    {
+      return 1.0;
+
+    }
+  };
+
+  #endif ROBIN
+
 
   // Dirichlet boundary conditions.
   class FunctionG : public Function<dim>
@@ -250,6 +273,10 @@ protected:
 #ifdef TRANSPORT_COEFFICIENT
   TransportCoefficient transport_coefficient;
 #endif //TRANSPORT_COEFFICIENT
+
+#ifdef ROBIN
+  FunctionGamma function_gamma;
+#endif //ROBIN
 
 
 #ifdef REACTION_COEFFICIENT
