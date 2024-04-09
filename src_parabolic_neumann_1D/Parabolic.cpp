@@ -30,19 +30,19 @@ Parabolic::setup()
   {
     pcout << "Initializing the finite element space" << std::endl;
 
-    fe = std::make_unique<FE_SimplexP<dim>>(r);
+    fe = std::make_unique<FE_Q<dim>>(r);
 
     pcout << "  Degree                     = " << fe->degree << std::endl;
     pcout << "  DoFs per cell              = " << fe->dofs_per_cell
           << std::endl;
 
-    quadrature = std::make_unique<QGaussSimplex<dim>>(r + 1);
+    quadrature = std::make_unique<QGauss<dim>>(r + 1);
 
     pcout << "  Quadrature points per cell = " << quadrature->size()
           << std::endl;
 
 #ifdef NEUMANN
-    quadrature_boundary = std::make_unique<QGaussSimplex<dim - 1>>(r + 1);
+    quadrature_boundary = std::make_unique<QGauss<dim - 1>>(r + 1);
 
     std::cout << "  Quadrature points per boundary cell = "
               << quadrature_boundary->size() << std::endl;
@@ -391,10 +391,10 @@ Parabolic::solve()
 double
 Parabolic::compute_error(const VectorTools::NormType &norm_type)
 {
-  FE_SimplexP<dim> fe_linear(1);
+  FE_Q<dim> fe_linear(1);
   MappingFE        mapping(fe_linear);
 
-  const QGaussSimplex<dim> quadrature_error = QGaussSimplex<dim>(r + 2);
+  const QGauss<dim> quadrature_error = QGauss<dim>(r + 2);
 
   exact_solution.set_time(time);
 

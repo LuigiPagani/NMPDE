@@ -45,6 +45,9 @@ deal_ii_setup_target(nonlinear_steady)
 add_executable(domain_decomposition_1D src_domain_decomposition_1D/domain_decomposition_main.cpp src_domain_decomposition_1D/Poisson2D.cpp)
 deal_ii_setup_target(domain_decomposition_1D)
 
+add_executable(parabolic_1D src_parabolic_neumann_1D/parabolic_main.cpp src_parabolic_neumann_1D/Parabolic.cpp)
+deal_ii_setup_target(parabolic_1D)
+
 
 
 

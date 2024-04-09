@@ -9,6 +9,7 @@
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 
+#include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_simplex_p.h>
 #include <deal.II/fe/fe_system.h>
 #include <deal.II/fe/fe_values.h>
@@ -34,16 +35,16 @@ using namespace dealii;
 #define NEUMANN
 //#define CONVERGENCE
 #define SPATIAL_CONVERGENCE
-//#define TRANSPORT_COEFFICIENT
+#define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT
-//#define REACTION_COEFFICIENT
+#define REACTION_COEFFICIENT
 
 // Class representing the non-linear diffusion problem.
 class Parabolic
 {
 public:
   // Physical dimension (1D, 2D, 3D)
-  static constexpr unsigned int dim = 2;
+  static constexpr unsigned int dim = 1;
 
 #ifdef MUCOEFFICIENT
   // Function for the mu coefficient.
@@ -69,7 +70,7 @@ public:
                  Vector<double> &values) const override
     {
       values[0] = 0.1;
-      values[1] = 0.2;
+      //values[1] = 0.2;
     }
 
     virtual double
