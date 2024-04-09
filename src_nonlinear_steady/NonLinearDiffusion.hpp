@@ -28,7 +28,7 @@
 #include <fstream>
 #include <iostream>
 
-#define NEUMANN
+//#define NEUMANN
 #define CONVERGENCE
 
 using namespace dealii;

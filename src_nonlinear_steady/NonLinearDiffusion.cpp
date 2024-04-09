@@ -239,28 +239,28 @@ NonLinearDiffusion::assemble_system()
   residual_vector.compress(VectorOperation::add);
 
   // Boundary conditions.
-  // {
-  //   std::map<types::global_dof_index, double> boundary_values;
+  {
+    std::map<types::global_dof_index, double> boundary_values;
 
-  //   std::map<types::boundary_id, const Function<dim> *> boundary_functions;
-  //   Functions::ZeroFunction<dim>                        zero_function;
+    std::map<types::boundary_id, const Function<dim> *> boundary_functions;
+    Functions::ZeroFunction<dim>                        zero_function;
     
-  //   // boundary_functions[0] = &zero_function;
-  //   boundary_functions[1] = &zero_function;
-  //   boundary_functions[2] = &zero_function;
-  //   boundary_functions[3] = &zero_function;
-  //   boundary_functions[4] = &zero_function;
-  //   boundary_functions[5] = &zero_function;
+    // boundary_functions[0] = &zero_function;
+    boundary_functions[1] = &zero_function;
+    boundary_functions[2] = &zero_function;
+    boundary_functions[3] = &zero_function;
+    boundary_functions[4] = &zero_function;
+    boundary_functions[5] = &zero_function;
 
 
 
-  //   VectorTools::interpolate_boundary_values(dof_handler,
-  //                                            boundary_functions,
-  //                                            boundary_values);
+    VectorTools::interpolate_boundary_values(dof_handler,
+                                             boundary_functions,
+                                             boundary_values);
 
-  //   MatrixTools::apply_boundary_values(
-  //     boundary_values, jacobian_matrix, delta_owned, residual_vector, true);
-  // }
+    MatrixTools::apply_boundary_values(
+      boundary_values, jacobian_matrix, delta_owned, residual_vector, true);
+  }
 }
 
 void

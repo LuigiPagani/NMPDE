@@ -196,7 +196,7 @@ HeatNonLinear::assemble_system()
             }
         }
 
-        #ifdef NEUMANN
+      #ifdef NEUMANN
       // If the cell is adjacent to the boundary...
       if (cell->at_boundary())
         {
@@ -288,21 +288,21 @@ HeatNonLinear::solve_newton()
 
   // We apply the boundary conditions to the initial guess (which is stored in
   // solution_owned and solution).
-  // {
-  //   IndexSet dirichlet_dofs = DoFTools::extract_boundary_dofs(dof_handler);
-  //   dirichlet_dofs          = dirichlet_dofs & dof_handler.locally_owned_dofs();
+  {
+    IndexSet dirichlet_dofs = DoFTools::extract_boundary_dofs(dof_handler);
+    dirichlet_dofs          = dirichlet_dofs & dof_handler.locally_owned_dofs();
 
-  //   function_g.set_time(time);
+    function_g.set_time(time);
 
-  //   TrilinosWrappers::MPI::Vector vector_dirichlet(solution_owned);
-  //   VectorTools::interpolate(dof_handler, function_g, vector_dirichlet);
+    TrilinosWrappers::MPI::Vector vector_dirichlet(solution_owned);
+    VectorTools::interpolate(dof_handler, function_g, vector_dirichlet);
 
-  //   for (const auto &idx : dirichlet_dofs)
-  //     solution_owned[idx] = vector_dirichlet[idx];
+    for (const auto &idx : dirichlet_dofs)
+      solution_owned[idx] = vector_dirichlet[idx];
 
-  //   solution_owned.compress(VectorOperation::insert);
-  //   solution = solution_owned;
-  // }
+    solution_owned.compress(VectorOperation::insert);
+    solution = solution_owned;
+  }
 
   while (n_iter < n_max_iters && residual_norm > residual_tolerance)
     {
