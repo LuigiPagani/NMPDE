@@ -95,6 +95,30 @@ public:
     }
   };
 
+  #ifdef NEUMANN
+   // Neumann boundary conditions.
+  class FunctionH : public Function<dim>
+  {
+  public:
+    // Constructor.
+    FunctionH()
+    {}
+
+    // Evaluation:
+    virtual double
+    value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
+    {
+      if(p[0] ==0.0)
+        return 1.0;
+      if(p[0] ==1.0)
+        return -1.0;
+      else
+        return 0.0;
+      
+    }
+  };
+#endif //NEUMANN
+
 #ifdef REACTION_COEFFICIENT
   // Reaction coefficient.
   class ReactionCoefficient : public Function<dim>
@@ -190,11 +214,13 @@ protected:
   // Quadrature formula.
   std::unique_ptr<Quadrature<dim>> quadrature;
 
-  #ifdef NEUMANN
-
+#ifdef NEUMANN
+  // Quadrature formula used on boundary lines.
   std::unique_ptr<Quadrature<dim - 1>> quadrature_boundary;
 
-  #endif //NEUMANN
+  // h(x).
+  FunctionH function_h;
+#endif //NEUMANN
 
 
   // DoF handler.

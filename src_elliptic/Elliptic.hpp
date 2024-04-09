@@ -31,7 +31,7 @@
 #include <fstream>
 #include <iostream>
 
-//#define NEUMANN
+#define NEUMANN
 //#define CG
 //#define CONVERGENCE
 #define TRANSPORT_COEFFICIENT
@@ -147,7 +147,7 @@ public:
     value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return p[0]+p[1];
+      return 0.0;
     }
   };
 
@@ -164,7 +164,13 @@ public:
     virtual double
     value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
     {
-      return p[1];
+      if(p[0]==0)
+        return 1.0;
+      if(p[0]==1)
+        return -1.0;
+      else
+        return 0.0;
+
     }
   };
 #endif //NEUMANN

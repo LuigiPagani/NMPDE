@@ -223,8 +223,8 @@ Elliptic::assemble()
               // tag) is that of one of the Neumann boundaries, we assemble the
               // boundary integral.
               if (cell->face(face_number)->at_boundary() &&
-                  (cell->face(face_number)->boundary_id() == 2 ||
-                   cell->face(face_number)->boundary_id() == 3))
+                  (cell->face(face_number)->boundary_id() == 0 ||
+                   cell->face(face_number)->boundary_id() == 1))
                 {
                   fe_values_boundary.reinit(cell, face_number);
 
@@ -264,11 +264,12 @@ Elliptic::assemble()
 
     std::map<types::boundary_id, const Function<dim> *> boundary_functions;
 
-    Functions::ZeroFunction<dim> zero_function(dim);
+    Functions::ConstantFunction<dim> zero_function(0.0, dim);
     Functions::ConstantFunction<dim> one_function(1.0, dim);
 
-    boundary_functions[0] = &function_g;
-    boundary_functions[1] = &function_g;
+    boundary_functions[3] = &zero_function;
+    boundary_functions[2] = &one_function;
+    //boundary_functions[2] = &zero_function;
 
 
 
