@@ -37,7 +37,8 @@ using namespace dealii;
 #define CG
 //#define TRANSPORT_COEFFICIENT
 //#define REACTION_COEFFICIENT
-//#define NEUMANN
+#define NEUMANN
+#define ROBIN
 
 /**
  * Class managing the differential problem.

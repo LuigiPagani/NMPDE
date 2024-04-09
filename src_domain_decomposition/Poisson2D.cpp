@@ -151,11 +151,23 @@ Poisson2D::assemble()
 
               for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
                 for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                {
+                  
+                  #ifdef ROBIN
+                  for (unsigned int j = 0; j < dofs_per_cell; ++j){
+                    cell_matrix(i, j) -=
+                     function_gamma.value(fe_values_boundary.quadrature_point(q)) * 
+                     fe_values_boundary.shape_value(j, q) *
+                     fe_values_boundary.shape_value(i, q) * 
+                     fe_values_boundary.JxW(q);  
+                  } 
+                  #endif //ROBIN
                   cell_rhs(i) +=
                     function_h.value(
                     fe_values_boundary.quadrature_point(q)) * // h(xq)
                     fe_values_boundary.shape_value(i, q) *      // v(xq)
                     fe_values_boundary.JxW(q);                  // Jq wq
+                }
             }
         }
     }

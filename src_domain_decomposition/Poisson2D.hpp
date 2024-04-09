@@ -37,6 +37,7 @@ using namespace dealii;
 #define TRANSPORT_COEFFICIENT
 #define REACTION_COEFFICIENT
 #define NEUMANN
+#define ROBIN
 
 /**
  * Class managing the differential problem.
@@ -94,6 +95,30 @@ public:
 
     }
   };
+
+  #ifdef ROBIN
+
+  class FunctionGamma : public Function<dim>
+  { public:
+    // Constructor.
+    FunctionGamma()
+    {}
+
+    // Evaluation.
+    virtual double
+    value(const Point<dim> &p,
+          const unsigned int /*component*/ = 0) const override
+    {
+      if(p[0] ==0.0)
+        return 1.0;
+      if(p[0] ==1.0)
+        return 1.0;
+      else
+        return 0.0;
+    }
+  };
+
+  #endif //ROBIN
 
   #ifdef NEUMANN
    // Neumann boundary conditions.
@@ -221,6 +246,12 @@ protected:
   // h(x).
   FunctionH function_h;
 #endif //NEUMANN
+
+#ifdef ROBIN
+
+FunctionGamma function_gamma;
+
+#endif //ROBIN
 
 
   // DoF handler.
