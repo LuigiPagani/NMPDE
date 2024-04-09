@@ -54,11 +54,10 @@ main(int /*argc*/, char * /*argv*/[])
 int
 main(int /*argc*/, char * /*argv*/[])
 {
-  const std::string mesh_file_name =
-    "../mesh/mesh.msh";
+  const std::string mesh_file_name ="../mesh/m1.msh";
   const unsigned int r = 1;
 
-  Elliptic problem(mesh_file_name, r);
+  Elliptic problem(39, r);
 
   problem.setup();
   problem.assemble();

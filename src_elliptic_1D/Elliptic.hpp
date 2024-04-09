@@ -34,7 +34,7 @@
 #include <iostream>
 
 //#define NEUMANN
-#define CONVERGENCE
+//#define CONVERGENCE
 //#define TRANSPORT_COEFFICIENT
 //#define REACTION_COEFFICIENT
 #define CG

@@ -42,6 +42,9 @@ deal_ii_setup_target(2D_Mesh)
 add_executable(nonlinear_steady src_nonlinear_steady/NonLinear_main.cpp src_nonlinear_steady/NonLinearDiffusion.cpp)
 deal_ii_setup_target(nonlinear_steady)
 
+add_executable(domain_decomposition_1D src_domain_decomposition_1D/domain_decomposition_main.cpp src_domain_decomposition_1D/Poisson2D.cpp)
+deal_ii_setup_target(domain_decomposition_1D)
+
 
 
 
