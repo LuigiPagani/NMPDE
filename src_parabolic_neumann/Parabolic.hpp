@@ -32,6 +32,7 @@
 using namespace dealii;
 
 #define NEUMANN
+#define ROBIN
 //#define CONVERGENCE
 #define SPATIAL_CONVERGENCE
 //#define TRANSPORT_COEFFICIENT
@@ -43,7 +44,7 @@ class Parabolic
 {
 public:
   // Physical dimension (1D, 2D, 3D)
-  static constexpr unsigned int dim = 2;
+  static constexpr unsigned int dim = 3;
 
 #ifdef MUCOEFFICIENT
   // Function for the mu coefficient.
@@ -105,6 +106,27 @@ public:
     }
   };
 #endif //REACTION_COEFFICIENT
+
+
+#ifdef ROBIN
+  class FunctionGamma : public Function<dim>
+  {
+  public:
+    // Constructor.
+    FunctionGamma()
+    {}
+
+    // Evaluation.
+    virtual double
+    value(const Point<dim> &p,
+          const unsigned int /*component*/ = 0) const override
+    {
+      return 1.0;
+
+    }
+  };
+
+  #endif ROBIN
 
   // Function for the forcing term.
   class ForcingTerm : public Function<dim>
@@ -272,6 +294,10 @@ protected:
   // Reaction coefficient.
   ReactionCoefficient reaction_coefficient;
 #endif //REACTION_COEFFICIENT
+
+#ifdef ROBIN
+  FunctionGamma function_gamma;
+#endif //ROBIN
 
   // Forcing term.
   ForcingTerm forcing_term;

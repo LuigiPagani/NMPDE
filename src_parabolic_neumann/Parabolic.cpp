@@ -104,6 +104,16 @@ Parabolic::assemble_matrices()
                           *quadrature,
                           update_values | update_gradients |
                             update_quadrature_points | update_JxW_values);
+  #ifdef ROBIN
+  // Since we need to compute integrals on the boundary for Neumann conditions,
+  // we also need a FEValues object to compute quantities on boundary edges
+  // (faces).
+  FEFaceValues<dim> fe_values_boundary(*fe,
+                                       *quadrature_boundary,
+                                       update_values |
+                                         update_quadrature_points |
+                                         update_JxW_values);
+#endif 
 
   FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
   FullMatrix<double> cell_stiffness_matrix(dofs_per_cell, dofs_per_cell);
@@ -172,6 +182,40 @@ Parabolic::assemble_matrices()
                 }
             }
         }
+      #ifdef ROBIN
+  // If the cell is adjacent to the boundary...
+  if (cell->at_boundary())
+    {
+      // ...we loop over its edges (referred to as faces in the deal.II
+      // jargon).
+      for (unsigned int face_number = 0; face_number < cell->n_faces();
+           ++face_number)
+        {
+          // If current face lies on the boundary, and its boundary ID (or
+          // tag) is that of one of the Neumann boundaries, we assemble the
+          // boundary integral.
+          if (cell->face(face_number)->at_boundary() &&
+              (cell->face(face_number)->boundary_id() == 0 ||
+               cell->face(face_number)->boundary_id() == 1))
+            {
+              fe_values_boundary.reinit(cell, face_number);
+
+              for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                {
+                  for (unsigned int j = 0; j < dofs_per_cell; ++j){
+                    cell_stiffness_matrix(i, j) -=
+                     function_gamma.value(fe_values_boundary.quadrature_point(q)) * 
+                     fe_values_boundary.shape_value(j, q) *
+                     fe_values_boundary.shape_value(i, q) * 
+                     fe_values_boundary.JxW(q);  
+                  }        
+
+                }
+            }
+        }
+    }
+#endif //NEUMANN
 
       cell->get_dof_indices(dof_indices);
 

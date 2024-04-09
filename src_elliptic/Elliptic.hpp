@@ -136,7 +136,6 @@ public:
   };
 
 #ifdef ROBIN
-    // Forcing term.
   class FunctionGamma : public Function<dim>
   {
   public:
