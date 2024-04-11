@@ -35,9 +35,11 @@ using namespace dealii;
 
 //#define CG
 #define TRANSPORT_COEFFICIENT
-#define REACTION_COEFFICIENT
+//#define REACTION_COEFFICIENT
 #define NEUMANN
 #define ROBIN
+//#define CONSERVATIVE_TRANSPORT_COEFFICIENT
+
 
 /**
  * Class managing the differential problem.
@@ -48,7 +50,6 @@ public:
   // Physical dimension (1D, 2D, 3D)
   static constexpr unsigned int dim = 2;
 
-  #ifdef TRANSPORT_COEFFICIENT
   // transportin coefficient.
   class TransportCoefficient : public Function<dim>
   {
@@ -76,7 +77,6 @@ public:
   protected:
     const double g = 0.5;
   };
-#endif //TRANSPORT_COEFFICIENT
 
   // Forcing term.
   class ForcingTerm : public Function<dim>
@@ -219,11 +219,9 @@ protected:
 
   #endif //REACTION_COEFFICIENT
 
-  #ifdef TRANSPORT_COEFFICIENT
 
   TransportCoefficient transport_coefficient;
 
-  #endif //TRANSPORT_COEFFICIENT
 
   ForcingTerm forcing_term;
 

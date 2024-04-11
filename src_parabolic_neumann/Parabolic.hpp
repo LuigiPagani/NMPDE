@@ -31,13 +31,14 @@
 
 using namespace dealii;
 
-#define NEUMANN
-#define ROBIN
+//#define NEUMANN
+//#define ROBIN
 //#define CONVERGENCE
-#define SPATIAL_CONVERGENCE
-//#define TRANSPORT_COEFFICIENT
+//#define SPATIAL_CONVERGENCE
+#define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT
-//#define REACTION_COEFFICIENT
+#define REACTION_COEFFICIENT
+//#define CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 // Class representing the non-linear diffusion problem.
 class Parabolic
@@ -60,7 +61,6 @@ public:
   };
 #endif //MUCOEFFICIENT
 
-#ifdef TRANSPORT_COEFFICIENT
   // transportin coefficient.
   class TransportCoefficient : public Function<dim>
   {
@@ -86,7 +86,6 @@ public:
   //protected:
   //  const double g = 0.5;
   };
-#endif //TRANSPORT_COEFFICIENT
 
 #ifdef REACTION_COEFFICIENT
   // Reaction coefficient.
@@ -126,7 +125,7 @@ public:
     }
   };
 
-  #endif ROBIN
+  #endif //ROBIN
 
   // Function for the forcing term.
   class ForcingTerm : public Function<dim>
@@ -285,10 +284,8 @@ protected:
   FunctionMu mu;
 #endif //MUCOEFFICIENT
 
-#ifdef TRANSPORT_COEFFICIENT
   // transport coefficient.
   TransportCoefficient transport_coefficient;
-#endif //TRANSPORT_COEFFICIENT
 
 #ifdef REACTION_COEFFICIENT
   // Reaction coefficient.

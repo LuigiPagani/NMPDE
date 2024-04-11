@@ -35,7 +35,8 @@
 //#define ROBIN
 //#define CG
 //#define CONVERGENCE
-#define TRANSPORT_COEFFICIENT
+#define CONSERVATIVE_TRANSPORT_COEFFICIENT
+//#define TRANSPORT_COEFFICIENT
 #define REACTION_COEFFICIENT
 
 
@@ -67,8 +68,6 @@ public:
     }
   };
 
-#ifdef TRANSPORT_COEFFICIENT
-  // transportin coefficient.
   class TransportCoefficient : public Function<dim>
   {
   public:
@@ -95,7 +94,6 @@ public:
   protected:
     const double g = 0.5;
   };
-#endif //TRANSPORT_COEFFICIENT
 
 #ifdef REACTION_COEFFICIENT
   // Reaction coefficient.
@@ -269,9 +267,7 @@ protected:
   // Diffusion coefficient.
   DiffusionCoefficient diffusion_coefficient;
   
-#ifdef TRANSPORT_COEFFICIENT
   TransportCoefficient transport_coefficient;
-#endif //TRANSPORT_COEFFICIENT
 
 #ifdef ROBIN
   FunctionGamma function_gamma;

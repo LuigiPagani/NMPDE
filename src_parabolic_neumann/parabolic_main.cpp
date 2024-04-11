@@ -154,7 +154,7 @@ main(int argc, char *argv[])
 
 /*   const std::string  mesh_file_name = "../mesh/mesh-square-h0.012500.msh";
  */  
-  const std::string  mesh_file_name = "../mesh/mesh-cube-5.msh";
+  const std::string  mesh_file_name = "../mesh/mesh-cube-20.msh";
   const unsigned int degree         = 2;
   const double T      = 2.0;
   const double deltat = 0.1;

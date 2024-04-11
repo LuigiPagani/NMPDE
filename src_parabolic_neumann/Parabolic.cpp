@@ -144,6 +144,16 @@ Parabolic::assemble_matrices()
           for (unsigned int d = 0; d < dim; ++d)
             transport_coefficient_tensor[d] = transport_coefficient_loc[d];
 #endif //TRANSPORT_COEFFICIENT
+
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+          Vector<double> transport_coefficient_loc(dim);
+          transport_coefficient.vector_value(fe_values.quadrature_point(q),
+                                    transport_coefficient_loc);
+
+          Tensor<1, dim> transport_coefficient_tensor;
+          for (unsigned int d = 0; d < dim; ++d)
+            transport_coefficient_tensor[d] = transport_coefficient_loc[d];
+#endif //TRANSPORT_COEFFICIENT
           // Evaluate coefficients on this quadrature node.
 #ifdef MUCOEFFICIENT
           const double mu_loc = mu.value(fe_values.quadrature_point(q));
@@ -169,6 +179,14 @@ Parabolic::assemble_matrices()
                                     * fe_values.shape_value(i,q)
                                     * fe_values.JxW(q);
 #endif //TRANSPORT_COEFFICIENT
+
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+              cell_stiffness_matrix(i, j) -= scalar_product(transport_coefficient_tensor,
+                                                  fe_values.shape_grad(i,q)) 
+                                * fe_values.shape_value(j,q) 
+                                * fe_values.JxW(q);
+
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 #ifdef REACTION_COEFFICIENT
                   cell_stiffness_matrix(i, j) +=
@@ -347,7 +365,12 @@ Parabolic::assemble_rhs(const double &time)
     //for (unsigned int i = 0; i < 4; ++i)
     //  boundary_functions[i] = &function_g;
     boundary_functions[0] = &function_g;
+    boundary_functions[1] = &function_g;
     boundary_functions[2] = &function_g;
+    boundary_functions[3] = &function_g;
+    boundary_functions[4] = &zero_function;
+    boundary_functions[5] = &zero_function;
+
 
     VectorTools::interpolate_boundary_values(dof_handler,
                                              boundary_functions,

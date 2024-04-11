@@ -102,6 +102,16 @@ Poisson2D::assemble()
             transport_coefficient_tensor[d] = transport_coefficient_loc[d];
 #endif
 
+          #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+          Vector<double> transport_coefficient_loc(dim);
+          transport_coefficient.vector_value(fe_values.quadrature_point(q),
+                                    transport_coefficient_loc);
+
+          Tensor<1, dim> transport_coefficient_tensor;
+          for (unsigned int d = 0; d < dim; ++d)
+            transport_coefficient_tensor[d] = transport_coefficient_loc[d];
+#endif
+
           for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
               for (unsigned int j = 0; j < dofs_per_cell; ++j)
@@ -115,6 +125,14 @@ Poisson2D::assemble()
                                     * fe_values.shape_value(i,q)
                                     * fe_values.JxW(q);
                   #endif //TRANSPORT_COEFFICIENT
+
+                  #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+              cell_matrix(i, j) -= scalar_product(transport_coefficient_tensor,
+                                                  fe_values.shape_grad(i,q)) 
+                                * fe_values.shape_value(j,q) 
+                                * fe_values.JxW(q);
+
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 #ifdef REACTION_COEFFICIENT
                   cell_matrix(i, j) +=
