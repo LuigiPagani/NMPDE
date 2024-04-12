@@ -38,7 +38,8 @@ using namespace dealii;
 //#define REACTION_COEFFICIENT
 #define NEUMANN
 #define ROBIN
-//#define CONSERVATIVE_TRANSPORT_COEFFICIENT
+//ls
+#define CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 
 /**
