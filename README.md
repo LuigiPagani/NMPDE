@@ -1,8 +1,3 @@
-Determining workspace structure
-
-Deciding which workspace information to collect
-
-Gathering workspace info
 
 # Project Title
 
