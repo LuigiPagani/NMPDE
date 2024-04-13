@@ -33,7 +33,7 @@
 using namespace dealii;
 
 #define NEUMANN
-//#define CONVERGENCE
+#define CONVERGENCE
 #define SPATIAL_CONVERGENCE
 #define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT

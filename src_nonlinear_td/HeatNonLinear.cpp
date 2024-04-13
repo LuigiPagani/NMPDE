@@ -410,7 +410,7 @@ HeatNonLinear::compute_error(const VectorTools::NormType &norm_type)
                                     norm_type);
 
   const double error =
-    VectorTools::compute_global_error(mesh, error_per_cell, norm_type);
+  VectorTools::compute_global_error(mesh, error_per_cell, norm_type);
 
   return error;
 }

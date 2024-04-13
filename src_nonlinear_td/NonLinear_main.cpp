@@ -15,11 +15,11 @@ main(int argc, char *argv[])
 
   const unsigned int degree = 1;
 
-  double T     = 1.0;
+  double T     = 0.5;
   double theta = 1.0;
 
   const std::vector<double> deltat_vector = {
-    0.25, 0.125, 0.0625, 0.03125, 0.015625};
+     0.125, 0.0625, 0.03125, 0.015625, 0.0078125};
   std::vector<double> errors_L2;
   std::vector<double> errors_H1;
 

@@ -423,7 +423,7 @@ Parabolic::solve()
   pcout << "===============================================" << std::endl;
 
   time = 0.0;
-  //assemble_matrices(time);
+  assemble_matrices(time);
 
 
   // Apply the initial condition.
@@ -450,7 +450,7 @@ Parabolic::solve()
       pcout << "n = " << std::setw(3) << time_step << ", t = " << std::setw(5)
             << time << ":" << std::flush;
       
-      assemble_matrices(time);
+      //assemble_matrices(time);
       assemble_rhs(time);
       solve_time_step();
       output(time_step);
@@ -478,7 +478,7 @@ Parabolic::compute_error(const VectorTools::NormType &norm_type)
                                     norm_type);
 
   const double error =
-    VectorTools::compute_global_error(mesh, error_per_cell, norm_type);
+  VectorTools::compute_global_error(mesh, error_per_cell, norm_type);
 
   return error;
 }
