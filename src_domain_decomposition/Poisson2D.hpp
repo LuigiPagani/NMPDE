@@ -39,7 +39,7 @@ using namespace dealii;
 #define NEUMANN
 #define ROBIN
 //ls
-#define CONSERVATIVE_TRANSPORT_COEFFICIENT
+//#define CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 
 /**

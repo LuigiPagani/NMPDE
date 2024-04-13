@@ -31,13 +31,13 @@
 
 using namespace dealii;
 
-//#define NEUMANN
-//#define ROBIN
+#define NEUMANN
+#define ROBIN
 //#define CONVERGENCE
 //#define SPATIAL_CONVERGENCE
 #define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT
-#define REACTION_COEFFICIENT
+//#define REACTION_COEFFICIENT
 //#define CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 // Class representing the non-linear diffusion problem.
@@ -120,7 +120,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
+      return std::exp(-get_time());
 
     }
   };
@@ -135,7 +135,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-        return 1.0;
+        return 0.0;
     }
   };
 
@@ -252,7 +252,7 @@ public:
 protected:
   // Assemble the mass and stiffness matrices.
   void
-  assemble_matrices();
+  assemble_matrices(const double &time);
 
   // Assemble the right-hand side of the problem.
   void
@@ -294,6 +294,7 @@ protected:
 
 #ifdef ROBIN
   FunctionGamma function_gamma;
+  
 #endif //ROBIN
 
   // Forcing term.

@@ -31,8 +31,8 @@
 #include <fstream>
 #include <iostream>
 
-//#define NEUMANN
-//#define ROBIN
+#define NEUMANN
+#define ROBIN
 //#define CG
 //#define CONVERGENCE
 #define CONSERVATIVE_TRANSPORT_COEFFICIENT

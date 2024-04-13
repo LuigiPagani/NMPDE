@@ -92,7 +92,7 @@ Parabolic::setup()
 }
 
 void
-Parabolic::assemble_matrices()
+Parabolic::assemble_matrices(const double &time)
 {
   pcout << "===============================================" << std::endl;
   pcout << "Assembling the system matrices" << std::endl;
@@ -220,8 +220,9 @@ Parabolic::assemble_matrices()
 
               for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
                 for (unsigned int i = 0; i < dofs_per_cell; ++i)
-                {
+                { 
                   for (unsigned int j = 0; j < dofs_per_cell; ++j){
+                    function_gamma.set_time(time);
                     cell_stiffness_matrix(i, j) -=
                      function_gamma.value(fe_values_boundary.quadrature_point(q)) * 
                      fe_values_boundary.shape_value(j, q) *
@@ -233,7 +234,7 @@ Parabolic::assemble_matrices()
             }
         }
     }
-#endif //NEUMANN
+#endif //ROBIN
 
       cell->get_dof_indices(dof_indices);
 
@@ -315,7 +316,7 @@ Parabolic::assemble_rhs(const double &time)
                              fe_values.shape_value(i, q) * fe_values.JxW(q);
             }
         }
-
+function_h.set_time(time);
 #ifdef NEUMANN
       // If the cell is adjacent to the boundary...
       if (cell->at_boundary())
@@ -333,12 +334,13 @@ Parabolic::assemble_rhs(const double &time)
                   (cell->face(face_number)->boundary_id() == 3))
                 {
                   fe_values_boundary.reinit(cell, face_number);
+                  
 
                   for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
                     for (unsigned int i = 0; i < dofs_per_cell; ++i)
                       cell_rhs(i) +=
                         function_h.value(
-                          fe_values_boundary.quadrature_point(q)) * // h(xq)
+                        fe_values_boundary.quadrature_point(q)) * // h(xq)
                         fe_values_boundary.shape_value(i, q) *      // v(xq)
                         fe_values_boundary.JxW(q);                  // Jq wq
                 }
@@ -356,29 +358,29 @@ Parabolic::assemble_rhs(const double &time)
   rhs_matrix.vmult_add(system_rhs, solution_owned);
 
   // We apply Dirichlet boundary conditions to the algebraic system.
-  {
-    std::map<types::global_dof_index, double> boundary_values;
+  // {
+  //   std::map<types::global_dof_index, double> boundary_values;
 
-    Functions::ZeroFunction<dim> zero_function(dim);
+  //   Functions::ZeroFunction<dim> zero_function(dim);
 
-    std::map<types::boundary_id, const Function<dim> *> boundary_functions;
-    //for (unsigned int i = 0; i < 4; ++i)
-    //  boundary_functions[i] = &function_g;
-    boundary_functions[0] = &function_g;
-    boundary_functions[1] = &function_g;
-    boundary_functions[2] = &function_g;
-    boundary_functions[3] = &function_g;
-    boundary_functions[4] = &zero_function;
-    boundary_functions[5] = &zero_function;
+  //   std::map<types::boundary_id, const Function<dim> *> boundary_functions;
+  //   //for (unsigned int i = 0; i < 4; ++i)
+  //   //  boundary_functions[i] = &function_g;
+  //   boundary_functions[0] = &zero_function;
+  //   boundary_functions[1] = &zero_function;
+  //   boundary_functions[2] = &zero_function;
+  //   boundary_functions[3] = &zero_function;
+  //   boundary_functions[4] = &zero_function;
+  //   boundary_functions[5] = &zero_function;
 
 
-    VectorTools::interpolate_boundary_values(dof_handler,
-                                             boundary_functions,
-                                             boundary_values);
+  //   VectorTools::interpolate_boundary_values(dof_handler,
+  //                                            boundary_functions,
+  //                                            boundary_values);
 
-    MatrixTools::apply_boundary_values(
-      boundary_values, lhs_matrix, solution_owned, system_rhs, false);
-  }
+  //   MatrixTools::apply_boundary_values(
+  //     boundary_values, lhs_matrix, solution_owned, system_rhs, false);
+  // }
 }
 
 void
@@ -418,11 +420,11 @@ Parabolic::output(const unsigned int &time_step) const
 void
 Parabolic::solve()
 {
-  assemble_matrices();
-
   pcout << "===============================================" << std::endl;
 
   time = 0.0;
+  //assemble_matrices(time);
+
 
   // Apply the initial condition.
   {
@@ -447,7 +449,8 @@ Parabolic::solve()
 
       pcout << "n = " << std::setw(3) << time_step << ", t = " << std::setw(5)
             << time << ":" << std::flush;
-
+      
+      assemble_matrices(time);
       assemble_rhs(time);
       solve_time_step();
       output(time_step);

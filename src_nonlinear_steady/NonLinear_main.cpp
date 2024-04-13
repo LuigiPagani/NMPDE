@@ -65,7 +65,7 @@ main(int argc, char *argv[])
 {
   Utilities::MPI::MPI_InitFinalize mpi_init(argc, argv);
 
-  const std::string  mesh_file_name = "../mesh/mesh-cube-20.msh";
+  const std::string  mesh_file_name = "../mesh/mesh-square-h0.012500.msh";
   const unsigned int degree         = 1;
 
   NonLinearDiffusion problem(mesh_file_name, degree);
