@@ -203,7 +203,7 @@ StokesTime::assemble_matrices()
                 for (unsigned int j = 0; j < dofs_per_cell; ++j)
                 {
                     // Assembling mass matrix correctly without the time step factor
-                    cell_mass_matrix(i, j) += fe_values[velocity].value(i, q) * fe_values[velocity].value(j, q) * fe_values.JxW(q);
+                    cell_mass_matrix(i, j) += fe_values[velocity].value(i, q) * fe_values[velocity].value(j, q) / deltat * fe_values.JxW(q);
 
                     // Implicit treatment of the viscous term
                     cell_matrix(i, j) += nu * scalar_product(fe_values[velocity].gradient(i, q), fe_values[velocity].gradient(j, q)) * fe_values.JxW(q);
