@@ -29,7 +29,7 @@
 #include <iostream>
 
 //#define NEUMANN
-#define CONVERGENCE
+//#define CONVERGENCE
 
 using namespace dealii;
 
@@ -75,8 +75,8 @@ public:
     double x = p[0];
     double pi = M_PI;
 
-    return 2 * std::pow(pi, 2) * std::cos(pi * x) * std::cos(pi * x) * std::sin(pi * x)
-           - std::pow(pi, 2) * std::sin(pi * x) * (1 + std::sin(pi * x) * std::sin(pi * x));
+    return -2 * std::pow(pi, 2) * std::cos(pi * x) * std::cos(pi * x) * std::sin(pi * x)
+            +std::pow(pi, 2) * std::sin(pi * x) * (1 + std::sin(pi * x) * std::sin(pi * x));
   }
 };
 
@@ -89,11 +89,10 @@ public:
     FunctionH() : Function<dim>() {}
     virtual double value(const Point<dim> & p, const unsigned int component = 0) const override
     {
-        double t = get_time(); // replace with your time variable
         if(p[0]==1)
-          return (1.0+std::sin(M_PI*p[0])*std::sin(M_PI*p[0]))*M_PI*std::cos(M_PI*p[0]);
+          return M_PI;
         if(p[0]==0)
-          return -(1.0+std::sin(M_PI*p[0])*std::sin(M_PI*p[0]))*M_PI*std::cos(M_PI*p[0]);
+          return -M_PI;
         else
           return 0.0;
     }

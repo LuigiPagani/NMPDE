@@ -49,6 +49,10 @@ add_executable(parabolic_1D src_parabolic_neumann_1D/parabolic_main.cpp src_para
 deal_ii_setup_target(parabolic_1D)
 
 
+add_executable(stokes_time src_stokes_td/stokes_td_main.cpp src_stokes_td/stokes-time.cpp)
+deal_ii_setup_target(stokes_time)
+
+
 
 
 

@@ -248,8 +248,6 @@ NonLinearDiffusion::assemble_system()
     boundary_functions[1] = &zero_function;
     boundary_functions[2] = &zero_function;
     boundary_functions[3] = &zero_function;
-    boundary_functions[4] = &zero_function;
-    boundary_functions[5] = &zero_function;
 
 
 
