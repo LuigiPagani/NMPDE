@@ -281,7 +281,7 @@ Stokes::assemble()
                         {
                           cell_rhs(i) +=
                             //pressure_function.value(q);
-                            -p_out *
+                            - p_out.value(fe_face_values.quadrature_point(q)) *
                             scalar_product(fe_face_values.normal_vector(q),
                                            fe_face_values[velocity].value(i,
                                                                           q)) *

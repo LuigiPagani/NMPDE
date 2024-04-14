@@ -52,6 +52,12 @@ deal_ii_setup_target(parabolic_1D)
 add_executable(stokes_time src_stokes_td/stokes_td_main.cpp src_stokes_td/stokes-time.cpp)
 deal_ii_setup_target(stokes_time)
 
+add_executable(stokes_td src_stokes_td/stokes_td_main.cpp src_stokes_td/stokes-time.cpp)
+deal_ii_setup_target(stokes_td)
+
+add_executable(stokes_si_td src_stokes_si_td/stokes_td_main.cpp src_stokes_si_td/stokes-time.cpp)
+deal_ii_setup_target(stokes_si_td)
+
 
 
 
