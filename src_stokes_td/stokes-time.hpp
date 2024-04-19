@@ -282,7 +282,7 @@ protected:
   // MPI parallel. /////////////////////////////////////////////////////////////
 
   void
-  assemble_matrices();
+  assemble_matrices(const double &time);
 
   void
   assemble_rhs(const double &time);

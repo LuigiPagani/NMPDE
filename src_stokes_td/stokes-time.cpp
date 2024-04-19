@@ -162,7 +162,7 @@ StokesTime::setup()
 }
 
 void
-StokesTime::assemble_matrices()
+StokesTime::assemble_matrices(const double &time)
 {
     pcout << "===============================================" << std::endl;
     pcout << "Assembling the matrices" << std::endl;
@@ -492,7 +492,10 @@ void StokesTime::output(const unsigned int &time_step, const double &time) const
 void
 StokesTime::solve()
 {
-  assemble_matrices();
+
+  unsigned int time_step = 0;
+  double       time      = 0;
+  assemble_matrices(time);
 
   pcout << "===============================================" << std::endl;
 
@@ -510,8 +513,7 @@ StokesTime::solve()
     pcout << "-----------------------------------------------" << std::endl;
   }
 
-  unsigned int time_step = 0;
-  double       time      = 0;
+
 
   while (time < T)
     {
@@ -523,6 +525,7 @@ StokesTime::solve()
 
       pcout << std::endl;
 
+      assemble_matrices(time);
       assemble_rhs(time);
       solve_time_step();
       output(time_step, time);
