@@ -223,7 +223,7 @@ Parabolic::assemble_matrices(const double &time)
                 { 
                   for (unsigned int j = 0; j < dofs_per_cell; ++j){
                     function_gamma.set_time(time);
-                    cell_stiffness_matrix(i, j) -=
+                    cell_stiffness_matrix(i, j) +=
                      function_gamma.value(fe_values_boundary.quadrature_point(q)) * 
                      fe_values_boundary.shape_value(j, q) *
                      fe_values_boundary.shape_value(i, q) * 

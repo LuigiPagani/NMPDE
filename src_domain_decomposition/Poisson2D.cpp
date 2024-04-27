@@ -173,7 +173,7 @@ Poisson2D::assemble()
                   
                   #ifdef ROBIN
                   for (unsigned int j = 0; j < dofs_per_cell; ++j){
-                    cell_matrix(i, j) -=
+                    cell_matrix(i, j) +=
                      function_gamma.value(fe_values_boundary.quadrature_point(q)) * 
                      fe_values_boundary.shape_value(j, q) *
                      fe_values_boundary.shape_value(i, q) * 
