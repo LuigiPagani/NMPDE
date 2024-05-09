@@ -34,14 +34,14 @@
 
 using namespace dealii;
 
-#define NEUMANN_CONDITION
+//#define NEUMANN_CONDITION
 
 // Class implementing a solver for the Stokes problem.
 class Stokes
 {
 public:
   // Physical dimension (1D, 2D, 3D)
-  static constexpr unsigned int dim = 3;
+  static constexpr unsigned int dim = 2;
 
   // Function for the forcing term.
   class ForcingTerm : public Function<dim>

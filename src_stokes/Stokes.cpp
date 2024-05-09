@@ -271,7 +271,10 @@ Stokes::assemble()
           for (unsigned int f = 0; f < cell->n_faces(); ++f)
             {
               if (cell->face(f)->at_boundary() &&
-                  cell->face(f)->boundary_id() == 2)
+                  (cell->face(f)->boundary_id() == 2||
+                   cell->face(f)->boundary_id() == 3||
+                    cell->face(f)->boundary_id() == 0||
+                    cell->face(f)->boundary_id() == 1))
                 {
                   fe_face_values.reinit(cell, f);
 
@@ -323,6 +326,8 @@ Stokes::assemble()
     boundary_functions.clear();
     Functions::ZeroFunction<dim> zero_function(dim + 1);
     boundary_functions[1] = &zero_function;
+    boundary_functions[2] = &zero_function;
+    boundary_functions[3] = &zero_function;    
     VectorTools::interpolate_boundary_values(dof_handler,
                                              boundary_functions,
                                              boundary_values,
@@ -334,18 +339,39 @@ Stokes::assemble()
   }
 }
 
+// void
+// Stokes::solve()
+// {
+//   pcout << "===============================================" << std::endl;
+
+//   SolverControl solver_control(2000, 1e-6 * system_rhs.l2_norm());
+
+//   SolverGMRES<TrilinosWrappers::MPI::BlockVector> solver(solver_control);
+
+//   // PreconditionBlockDiagonal preconditioner;
+//   // preconditioner.initialize(system_matrix.block(0, 0),
+//   //                           pressure_mass.block(1, 1));
+
+//   PreconditionBlockTriangular preconditioner;
+//   preconditioner.initialize(system_matrix.block(0, 0), 
+//                             pressure_mass.block(1, 1),
+//                             system_matrix.block(1, 0));
+
+//   pcout << "Solving the linear system" << std::endl;
+//   solver.solve(system_matrix, solution_owned, system_rhs, preconditioner);
+//   pcout << "  " << solver_control.last_step() << " GMRES iterations"
+//         << std::endl;
+
+//   solution = solution_owned;
+// }
+
 void
 Stokes::solve()
 {
   pcout << "===============================================" << std::endl;
 
   SolverControl solver_control(2000, 1e-6 * system_rhs.l2_norm());
-
   SolverGMRES<TrilinosWrappers::MPI::BlockVector> solver(solver_control);
-
-  // PreconditionBlockDiagonal preconditioner;
-  // preconditioner.initialize(system_matrix.block(0, 0),
-  //                           pressure_mass.block(1, 1));
 
   PreconditionBlockTriangular preconditioner;
   preconditioner.initialize(system_matrix.block(0, 0),
@@ -358,7 +384,20 @@ Stokes::solve()
         << std::endl;
 
   solution = solution_owned;
+
+  // Subtract a constant from the pressure component of the solution
+  const double pressure_adjustment = 7.7666; // Define the constant to subtract
+  if (!solution.block(1).locally_owned_elements().is_empty()) {
+    for (auto index : solution.block(1).locally_owned_elements()) {
+      solution.block(1)[index] -= pressure_adjustment;
+    }
+  }
+
+  solution.compress(VectorOperation::insert); // Ensure changes are consistent across MPI processes
+
+  pcout << "Pressure adjusted by subtracting constant value." << std::endl;
 }
+
 
 void
 Stokes::output()
