@@ -1,10 +1,10 @@
 SetFactory("OpenCASCADE");
-Lx = 0.25; // Length along the x-axis.
-Ly = 1.0;  // Length along the y-axis.
+Lx = 2.0; // Length along the x-axis.
+Ly = 2.0;  // Length along the y-axis.
 h = 0.0125; // Mesh size.
 
 // Create rectangle starting from (0,0) extending to (Lx, Ly).
-Rectangle(1) = {0, 0, 0, Lx, Ly};
+Rectangle(1) = {-1, -1, 0, Lx, Ly};
 
 // Set mesh size.
 Mesh.CharacteristicLengthMax = h;

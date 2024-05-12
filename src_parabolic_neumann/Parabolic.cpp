@@ -316,8 +316,9 @@ Parabolic::assemble_rhs(const double &time)
                              fe_values.shape_value(i, q) * fe_values.JxW(q);
             }
         }
-function_h.set_time(time);
 #ifdef NEUMANN
+function_h.set_time(time);
+
       // If the cell is adjacent to the boundary...
       if (cell->at_boundary())
         {
@@ -357,30 +358,31 @@ function_h.set_time(time);
   // Add the term that comes from the old solution.
   rhs_matrix.vmult_add(system_rhs, solution_owned);
 
-  // We apply Dirichlet boundary conditions to the algebraic system.
-  // {
-  //   std::map<types::global_dof_index, double> boundary_values;
+  //We apply Dirichlet boundary conditions to the algebraic system.
+  {
+    std::map<types::global_dof_index, double> boundary_values;
 
-  //   Functions::ZeroFunction<dim> zero_function(dim);
+    Functions::ZeroFunction<dim> zero_function(dim);
 
-  //   std::map<types::boundary_id, const Function<dim> *> boundary_functions;
-  //   //for (unsigned int i = 0; i < 4; ++i)
-  //   //  boundary_functions[i] = &function_g;
-  //   boundary_functions[0] = &zero_function;
-  //   boundary_functions[1] = &zero_function;
-  //   boundary_functions[2] = &zero_function;
-  //   boundary_functions[3] = &zero_function;
-  //   boundary_functions[4] = &zero_function;
-  //   boundary_functions[5] = &zero_function;
+    std::map<types::boundary_id, const Function<dim> *> boundary_functions;
+    //for (unsigned int i = 0; i < 4; ++i)
+    //  boundary_functions[i] = &function_g;
+    //boundary_functions[0] = &zero_function;
+    boundary_functions[1] = &zero_function;
+    boundary_functions[2] = &zero_function;
+    boundary_functions[3] = &zero_function;
+    boundary_functions[4] = &zero_function;
 
 
-  //   VectorTools::interpolate_boundary_values(dof_handler,
-  //                                            boundary_functions,
-  //                                            boundary_values);
 
-  //   MatrixTools::apply_boundary_values(
-  //     boundary_values, lhs_matrix, solution_owned, system_rhs, false);
-  // }
+
+    VectorTools::interpolate_boundary_values(dof_handler,
+                                             boundary_functions,
+                                             boundary_values);
+
+    MatrixTools::apply_boundary_values(
+      boundary_values, lhs_matrix, solution_owned, system_rhs, false);
+  }
 }
 
 void
@@ -457,7 +459,6 @@ Parabolic::solve()
     }
 }
 
-#ifdef CONVERGENCE
 double
 Parabolic::compute_error(const VectorTools::NormType &norm_type)
 {
@@ -483,4 +484,3 @@ Parabolic::compute_error(const VectorTools::NormType &norm_type)
   return error;
 }
 
-#endif //CONVERGENCE

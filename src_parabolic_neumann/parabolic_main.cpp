@@ -13,7 +13,7 @@ main(int argc, char *argv[])
   const unsigned int               mpi_rank =
     Utilities::MPI::this_mpi_process(MPI_COMM_WORLD);
 
-  const unsigned int degree = 1;
+  const unsigned int degree = 2;
 
   double T     = 1.0;
   double theta = 0.5;
@@ -25,7 +25,7 @@ main(int argc, char *argv[])
 
   for (const auto &deltat : deltat_vector)
     {
-      Parabolic problem("../mesh/mesh-cube-20.msh", degree, T, deltat, theta);
+      Parabolic problem("../mesh/square_mesh.msh", degree, T, deltat, theta);
 
       problem.setup();
       problem.solve();
@@ -91,10 +91,10 @@ main(int argc, char *argv[])
     
   ConvergenceTable table;
 
-  const std::vector<std::string> meshes = {"../mesh/mesh-cube-5.msh",
-                                           "../mesh/mesh-cube-10.msh",
-                                           "../mesh/mesh-cube-20.msh",
-                                           "../mesh/mesh-cube-40.msh"};
+  const std::vector<std::string> meshes = {"../mesh/mesh-square-h0.100000.msh",
+                                           "../mesh/mesh-square-h0.050000.msh",
+                                           "../mesh/mesh-square-h0.025000.msh",
+                                           "../mesh/mesh-square-h0.012500.msh"};
   const std::vector<double>      h_vals = {0.1,
                                            0.05,
                                            0.025,
@@ -104,8 +104,8 @@ main(int argc, char *argv[])
   std::ofstream convergence_file("convergence.csv");
   convergence_file << "h,eL2,eH1" << std::endl;
 
-  T =      5e-4;
-  double deltat = 1e-4;
+  T =      1e-2;
+  double deltat = 1e-3;
 
   for (unsigned int i = 0; i < meshes.size(); ++i)
     {
@@ -154,16 +154,23 @@ main(int argc, char *argv[])
 
 /*   const std::string  mesh_file_name = "../mesh/mesh-square-h0.012500.msh";
  */  
-  const std::string  mesh_file_name = "../mesh/mesh-cube-20.msh";
+  const std::string  mesh_file_name = "../mesh/square_mesh.msh";
   const unsigned int degree         = 2;
-  const double T      = 2.0;
-  const double deltat = 0.1;
+  const double T      = 0.1;
+  const double deltat = 0.005;
   const double theta  = 0.5;
 
   Parabolic problem(mesh_file_name, degree, T, deltat, theta);
 
   problem.setup();
   problem.solve();
+
+  const double error_L2 = problem.compute_error(VectorTools::L2_norm);
+  const double error_H1 = problem.compute_error(VectorTools::H1_norm);
+  printf("L2 error: %e\n", error_L2);
+  printf("H1 error: %e\n", error_H1);
+
+
 
   return 0;
 }

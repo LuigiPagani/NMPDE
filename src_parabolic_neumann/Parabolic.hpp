@@ -31,11 +31,11 @@
 
 using namespace dealii;
 
-#define NEUMANN
-#define ROBIN
-#define CONVERGENCE
-#define SPATIAL_CONVERGENCE
-#define TRANSPORT_COEFFICIENT
+//#define NEUMANN
+//#define ROBIN
+//#define CONVERGENCE
+//#define SPATIAL_CONVERGENCE
+//#define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT
 //#define REACTION_COEFFICIENT
 //#define CONSERVATIVE_TRANSPORT_COEFFICIENT
@@ -45,7 +45,7 @@ class Parabolic
 {
 public:
   // Physical dimension (1D, 2D, 3D)
-  static constexpr unsigned int dim = 3;
+  static constexpr unsigned int dim = 2;
 
 #ifdef MUCOEFFICIENT
   // Function for the mu coefficient.
@@ -56,7 +56,7 @@ public:
     value(const Point<dim> & /*p*/,
           const unsigned int /*component*/ = 0) const override
     {
-      return 3.0;
+      return 1.0;
     }
   };
 #endif //MUCOEFFICIENT
@@ -69,8 +69,8 @@ public:
     vector_value(const Point<dim> & /*p*/,
                  Vector<double> &values) const override
     {
-      values[0] = 0.1;
-      values[1] = 0.2;
+      values[0] = 0.0;
+      values[1] = 0.0;
     }
 
     virtual double
@@ -78,14 +78,17 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 0.1;
+        return 0.0;
       else
-        return 0.2;
+        return 0.0;
     }
+
 
   //protected:
   //  const double g = 0.5;
   };
+
+
 
 #ifdef REACTION_COEFFICIENT
   // Reaction coefficient.
@@ -135,7 +138,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-        return 0.0;
+        return M_PI * (-2.0 + 5.0 * M_PI) * std::exp(-2.0*M_PI * get_time()) * std::sin(2.0 * M_PI * p[0]) * std::cos(M_PI * p[1]);
     }
   };
 
@@ -147,7 +150,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 2.0;
+      return std::sin(2.0*M_PI*p[0])*std::cos(M_PI*p[1])*std::exp(-2.0*0);
     }
   };
 
@@ -159,7 +162,7 @@ public:
     value(const Point<dim> &/*p*/,
           const unsigned int /*component*/ = 0) const override
     {
-      return 2.0;
+      return 0.0;
     }
   };
 
@@ -189,7 +192,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 0;
+      return std::sin(2.0*M_PI*p[0])*std::cos(M_PI*p[1])*std::exp(-2.0*get_time());
     }
 
     virtual Tensor<1, dim>
@@ -199,19 +202,16 @@ public:
       Tensor<1, dim> result;
 
       // duex / dx
-      result[0] = 2 * M_PI * std::sin(5 * M_PI * get_time()) *
-                  std::cos(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
-                  std::sin(4 * M_PI * p[2]);
+      result[0] = 2 * M_PI * std::exp(-M_PI * get_time()) *
+          std::cos(2 * M_PI * p[0]) * std::cos(M_PI * p[1]);
 
       // duex / dy
-      result[1] = 3 * M_PI * std::sin(5 * M_PI * get_time()) *
-                  std::sin(2 * M_PI * p[0]) * std::cos(3 * M_PI * p[1]) *
-                  std::sin(4 * M_PI * p[2]);
+      result[1] = -M_PI * std::exp(-M_PI * get_time()) *
+          std::sin(2 * M_PI * p[0]) * std::sin(M_PI * p[1]);
+
 
       // duex / dz
-      result[2] = 4 * M_PI * std::sin(5 * M_PI * get_time()) *
-                  std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
-                  std::cos(4 * M_PI * p[2]);
+      //result[2] = 0;
 
       return result;
     }
@@ -243,11 +243,9 @@ public:
   void
   solve();
 
-#ifdef CONVERGENCE
   // Compute the error.
   double
   compute_error(const VectorTools::NormType &norm_type);
-#endif //CONVERGENCE
 
 protected:
   // Assemble the mass and stiffness matrices.
