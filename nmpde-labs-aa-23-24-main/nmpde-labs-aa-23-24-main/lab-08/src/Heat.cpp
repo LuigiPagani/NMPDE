@@ -271,9 +271,14 @@ Heat::assemble_rhs(const double &time)
   {
     std::map<types::global_dof_index, double> boundary_values;
 
+    Functions::ZeroFunction<dim> zero_function(dim);
+
+
     std::map<types::boundary_id, const Function<dim> *> boundary_functions;
-    for (unsigned int i = 0; i < 6; ++i)
-      boundary_functions[i] = &exact_solution;
+    boundary_functions[0] = &zero_function;
+    boundary_functions[1] = &zero_function;
+    boundary_functions[2] = &zero_function;
+    boundary_functions[3] = &zero_function;
 
     VectorTools::interpolate_boundary_values(dof_handler,
                                              boundary_functions,

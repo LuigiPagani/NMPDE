@@ -1,4 +1,3 @@
-#ifndef ELLIPTIC
 #define ELLIPTIC
 
 #include <deal.II/base/quadrature_lib.h>
@@ -30,13 +29,12 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-
 #define NEUMANN
 #define ROBIN
 //#define CG
-//#define CONVERGENCE
+#define CONVERGENCE
 #define CONSERVATIVE_TRANSPORT_COEFFICIENT
-//#define TRANSPORT_COEFFICIENT
+#define TRANSPORT_COEFFICIENT
 #define REACTION_COEFFICIENT
 
 
@@ -76,9 +74,9 @@ public:
                  Vector<double> &values) const override
     {
       for (unsigned int i = 0; i < dim - 1; ++i)
-        values[0] = 0.0;
+        values[0] = 1.0;
 
-      values[1] = 2.0;
+      values[1] = 1.0;
     }
 
     virtual double
@@ -86,9 +84,9 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 0.0;
+        return 1.0;
       else
-        return 2.0;
+        return 1.0;
     }
 
   protected:
@@ -128,8 +126,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
-
+      return 2 * std::sqrt(2) * std::sin(p[0] + M_PI / 4);
     }
   };
 
@@ -167,7 +164,7 @@ public:
     value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 0.0;
+      return std::sin(p[0]);
     }
   };
 
@@ -184,17 +181,20 @@ public:
     virtual double
     value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
     {
-      if(p[0]==0)
-        return 1.0;
-      if(p[0]==1)
-        return -1.0;
+      if (p[0] == 0.0)
+      return -1.0;
+      else if (p[0] == 1.0)
+      return std::cos(1.0);
+      else if (p[1] == 0.0)
+      return 2.0 * std::sin(p[0]);
+      else if (p[1] == 1.0)
+      return 0.0;
       else
-        return 0.0;
-
+      return 0.0;
     }
   };
-#endif //NEUMANN
 
+#endif //NEUMANN
 
 #ifdef CONVERGENCE
   // Exact solution.
@@ -210,7 +210,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::sin(2.0*M_PI*p[0])*std::sin(4.0*M_PI*p[1]);
+      return std::sin(p[0]);
     }
 
     // Gradient evaluation.
@@ -219,10 +219,10 @@ public:
       Tensor<1, dim> result;
 
       // Gradient with respect to x
-      result[0] = 2.0 * M_PI * std::cos(2.0 * M_PI * p[0]) * std::sin(4.0 * M_PI * p[1]);
+      result[0] = 1.0;
 
       // Gradient with respect to y
-      result[1] = 4.0 * M_PI * std::sin(2.0 * M_PI * p[0]) * std::cos(4.0 * M_PI * p[1]);
+      result[1] = 1.0;
 
       return result;
     }
@@ -319,4 +319,3 @@ protected:
 
 };
 
-#endif

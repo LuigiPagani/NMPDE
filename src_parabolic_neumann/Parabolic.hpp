@@ -138,7 +138,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-        return M_PI * (-2.0 + 5.0 * M_PI) * std::exp(-2.0*M_PI * get_time()) * std::sin(2.0 * M_PI * p[0]) * std::cos(M_PI * p[1]);
+        return  (-2.0 + 5.0 * M_PI*M_PI) * std::exp(-2.0* get_time()) * std::sin(2.0 * M_PI * p[0]) * std::cos(M_PI * p[1]);
     }
   };
 
@@ -159,10 +159,10 @@ public:
   {
   public:
     virtual double
-    value(const Point<dim> &/*p*/,
+    value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 0.0;
+      return std::sin(2.0*M_PI*p[0])*std::cos(M_PI*p[1])*std::exp(-2.0*get_time());
     }
   };
 

@@ -165,6 +165,7 @@ Elliptic::assemble()
           
 #ifdef TRANSPORT_COEFFICIENT
           Vector<double> transport_coefficient_loc(dim);
+          //transport_coefficient_loc = 0.0;
           transport_coefficient.vector_value(fe_values.quadrature_point(q),
                                     transport_coefficient_loc);
 
@@ -174,11 +175,13 @@ Elliptic::assemble()
 #endif
 
 #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-          Vector<double> transport_coefficient_loc(dim);
+          //Vector<double> transport_coefficient_loc(dim);
+          //transport_coefficient_loc = 0.0;
           transport_coefficient.vector_value(fe_values.quadrature_point(q),
                                     transport_coefficient_loc);
 
-          Tensor<1, dim> transport_coefficient_tensor;
+          //Tensor<1, dim> transport_coefficient_tensor;
+          transport_coefficient_tensor=0.0;
           for (unsigned int d = 0; d < dim; ++d)
             transport_coefficient_tensor[d] = transport_coefficient_loc[d];
 #endif
@@ -243,7 +246,9 @@ Elliptic::assemble()
           // boundary integral.
           if (cell->face(face_number)->at_boundary() &&
               (cell->face(face_number)->boundary_id() == 0 ||
-               cell->face(face_number)->boundary_id() == 1))
+               cell->face(face_number)->boundary_id() == 1 ||
+               cell->face(face_number)->boundary_id() == 2 ||
+              cell->face(face_number)->boundary_id() == 3))
             {
               fe_values_boundary.reinit(cell, face_number);
 
@@ -283,39 +288,41 @@ Elliptic::assemble()
       system_rhs.add(dof_indices, cell_rhs);
     }
 
-  // Boundary conditions.
-  {
-    // We construct a map that stores, for each DoF corresponding to a
-    // Dirichlet condition, the corresponding value. E.g., if the Dirichlet
-    // condition is u_i = b, the map will contain the pair (i, b).
-    std::map<types::global_dof_index, double> boundary_values;
+  // // Boundary conditions.
+  // {
+  //   // We construct a map that stores, for each DoF corresponding to a
+  //   // Dirichlet condition, the corresponding value. E.g., if the Dirichlet
+  //   // condition is u_i = b, the map will contain the pair (i, b).
+  //   std::map<types::global_dof_index, double> boundary_values;
 
-    // Then, we build a map that, for each boundary tag, stores the
-    // corresponding boundary function.
+  //   // Then, we build a map that, for each boundary tag, stores the
+  //   // corresponding boundary function.
 
-    std::map<types::boundary_id, const Function<dim> *> boundary_functions;
+  //   std::map<types::boundary_id, const Function<dim> *> boundary_functions;
 
-    Functions::ConstantFunction<dim> zero_function(0.0, dim);
-    Functions::ConstantFunction<dim> one_function(1.0, dim);
+  //   Functions::ConstantFunction<dim> zero_function(0.0, dim);
+  //   Functions::ConstantFunction<dim> one_function(1.0, dim);
 
-    boundary_functions[3] = &zero_function;
-    boundary_functions[2] = &one_function;
-    //boundary_functions[2] = &zero_function;
+  //   boundary_functions[0] = &function_g;
+  //   boundary_functions[1] = &function_g;
+  //   boundary_functions[2] = &function_g;
+  //   boundary_functions[3] = &function_g;
+    
 
 
 
 
-    // interpolate_boundary_values fills the boundary_values map.
-    VectorTools::interpolate_boundary_values(dof_handler,
-                                             boundary_functions,
-                                             boundary_values);
+  //   // interpolate_boundary_values fills the boundary_values map.
+  //   VectorTools::interpolate_boundary_values(dof_handler,
+  //                                            boundary_functions,
+  //                                            boundary_values);
 
-    // Finally, we modify the linear system to apply the boundary
-    // conditions. This replaces the equations for the boundary DoFs with
-    // the corresponding u_i = 0 equations.
-    MatrixTools::apply_boundary_values(
-      boundary_values, system_matrix, solution, system_rhs, true);
-  }
+  //   // Finally, we modify the linear system to apply the boundary
+  //   // conditions. This replaces the equations for the boundary DoFs with
+  //   // the corresponding u_i = 0 equations.
+  //   MatrixTools::apply_boundary_values(
+  //     boundary_values, system_matrix, solution, system_rhs, true);
+  // }
 }
 
 void

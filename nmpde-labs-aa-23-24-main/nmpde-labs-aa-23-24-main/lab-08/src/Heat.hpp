@@ -29,14 +29,14 @@
 #include <iostream>
 
 using namespace dealii;
-#define NEUMANN
+//#define NEUMANN
 
 // Class representing the non-linear diffusion problem.
 class Heat
 {
 public:
   // Physical dimension (1D, 2D, 3D)
-  static constexpr unsigned int dim = 3;
+  static constexpr unsigned int dim = 2;
 
   // Function for the mu coefficient.
   class FunctionMu : public Function<dim>
@@ -58,10 +58,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return (29 * M_PI * M_PI * std::sin(5 * M_PI * get_time()) +
-              5 * M_PI * std::cos(5 * M_PI * get_time())) *
-             std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
-             std::sin(4 * M_PI * p[2]);
+      return (-2.0 + 5.0 * M_PI * M_PI) * std::exp(-2.0*get_time())*std::sin(2 * M_PI * p[0]) * std::cos(M_PI * p[1]);
     }
   };
 
@@ -71,23 +68,6 @@ public:
     FunctionH() : Function<dim>() {}
     virtual double value(const Point<dim> & p, const unsigned int /*component*/ = 0) const override
     {
-        double t = get_time(); // replace with your time variable
-        double x = p[0];
-        double y = p[1];
-        double z = p[2];
-        if (p[0] == 0) {
-            return -2.0 * M_PI * cos(2.0 * M_PI * x) * sin(5.0 * M_PI * t) * sin(3.0 * M_PI * y) * sin(4.0 * M_PI * z) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
-        } else if (p[0] == 1) {
-            return 2.0 * M_PI * cos(2.0 * M_PI * x) * sin(5.0 * M_PI * t) * sin(3.0 * M_PI * y) * sin(4.0 * M_PI * z) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
-        } else if (p[1] == 0) {
-            return -3.0 * M_PI * cos(3.0 * M_PI * y) * sin(5.0 * M_PI * t) * sin(2.0 * M_PI * x) * sin(4.0 * M_PI * z) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
-        } else if (p[1] == 1) {
-            return 3.0 * M_PI * cos(3.0 * M_PI * y) * sin(5.0 * M_PI * t) * sin(2.0 * M_PI * x) * sin(4.0 * M_PI * z) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
-        } else if (p[2] == 0) {
-            return -4.0 * M_PI * cos(4.0 * M_PI * z) * sin(5.0 * M_PI * t) * sin(2.0 * M_PI * x) * sin(3.0 * M_PI * y) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
-        } else if (p[2] == 1) {
-            return 4.0 * M_PI * cos(4.0 * M_PI * z) * sin(5.0 * M_PI * t) * sin(2.0 * M_PI * x) * sin(3.0 * M_PI * y) * (1.0 + 10.0 * pow(sin(5.0 * M_PI * t), 2) * pow(sin(2.0 * M_PI * x), 2) * pow(sin(3.0 * M_PI * y), 2) * pow(sin(4.0 * M_PI * z), 2));
-        }
         return 0;
     }
 };
@@ -100,8 +80,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::sin(5 * M_PI * get_time()) * std::sin(2 * M_PI * p[0]) *
-             std::sin(3 * M_PI * p[1]) * std::sin(4 * M_PI * p[2]);
+      return std::exp(-2 * get_time()) * std::sin(2 * M_PI * p[0]) *std::cos(M_PI * p[1]);
     }
 
     virtual Tensor<1, dim>

@@ -21,7 +21,7 @@ main(int /*argc*/, char * /*argv*/[])
                                            1.0 / 20.0,
                                            1.0 / 40.0,
                                            1.0 / 80.0};
-  const unsigned int             degree = ;
+  const unsigned int             degree = 2 ;
 
   // Only for Exercise 1:
   std::ofstream convergence_file("convergence.csv");
