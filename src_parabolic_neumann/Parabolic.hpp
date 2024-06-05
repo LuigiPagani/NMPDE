@@ -31,13 +31,13 @@
 
 using namespace dealii;
 
-//#define NEUMANN
-//#define ROBIN
-//#define CONVERGENCE
-//#define SPATIAL_CONVERGENCE
-//#define TRANSPORT_COEFFICIENT
+#define NEUMANN
+#define ROBIN
+#define CONVERGENCE
+#define SPATIAL_CONVERGENCE
+#define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT
-//#define REACTION_COEFFICIENT
+#define REACTION_COEFFICIENT
 //#define CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 // Class representing the non-linear diffusion problem.
@@ -69,8 +69,8 @@ public:
     vector_value(const Point<dim> & /*p*/,
                  Vector<double> &values) const override
     {
-      values[0] = 0.0;
-      values[1] = 0.0;
+      values[0] = 1.0;
+      values[1] = 1.0;
     }
 
     virtual double
@@ -78,9 +78,9 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 0.0;
+        return 1.0;
       else
-        return 0.0;
+        return 1.0;
     }
 
 
@@ -123,7 +123,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::exp(-get_time());
+      return 1.0;
 
     }
   };
@@ -137,8 +137,9 @@ public:
     virtual double
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
-    {
-        return  (-2.0 + 5.0 * M_PI*M_PI) * std::exp(-2.0* get_time()) * std::sin(2.0 * M_PI * p[0]) * std::cos(M_PI * p[1]);
+    {   
+        double t = get_time();
+        return 4.0* std::exp(-t);
     }
   };
 
@@ -150,7 +151,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::sin(2.0*M_PI*p[0])*std::cos(M_PI*p[1])*std::exp(-2.0*0);
+      return p[0]+p[1];
     }
   };
 
@@ -162,7 +163,8 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::sin(2.0*M_PI*p[0])*std::cos(M_PI*p[1])*std::exp(-2.0*get_time());
+      double t = get_time();
+      return std::exp(-t)*(p[0]+p[1]);
     }
   };
 
@@ -179,7 +181,7 @@ public:
     virtual double
     value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
     {
-      return std::exp(-get_time());
+      return 0.0;
     }
   };
 #endif //NEUMANN
@@ -192,7 +194,8 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::sin(2.0*M_PI*p[0])*std::cos(M_PI*p[1])*std::exp(-2.0*get_time());
+      double t = get_time();
+      return std::exp(-t)*(p[0]+p[1]);
     }
 
     virtual Tensor<1, dim>
@@ -308,10 +311,10 @@ protected:
   ExactSolution exact_solution;
 
 
-#ifdef NEUMANN
-  // Quadrature formula used on boundary lines.
   std::unique_ptr<Quadrature<dim - 1>> quadrature_boundary;
 
+#ifdef NEUMANN
+  // Quadrature formula used on boundary lines.
   // h(x).
   FunctionH function_h;
 #endif //NEUMANN

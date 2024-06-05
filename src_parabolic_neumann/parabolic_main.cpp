@@ -25,7 +25,7 @@ main(int argc, char *argv[])
 
   for (const auto &deltat : deltat_vector)
     {
-      Parabolic problem("../mesh/square_mesh.msh", degree, T, deltat, theta);
+      Parabolic problem("../mesh/mesh-square-h0.100000.msh", degree, T, deltat, theta);
 
       problem.setup();
       problem.solve();

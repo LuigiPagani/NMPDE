@@ -146,11 +146,13 @@ Parabolic::assemble_matrices(const double &time)
 #endif //TRANSPORT_COEFFICIENT
 
 #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-          Vector<double> transport_coefficient_loc(dim);
+          //Vector<double> transport_coefficient_loc(dim);
+          transport_coefficient_loc = 0.0;
           transport_coefficient.vector_value(fe_values.quadrature_point(q),
                                     transport_coefficient_loc);
 
-          Tensor<1, dim> transport_coefficient_tensor;
+          //Tensor<1, dim> transport_coefficient_tensor;
+          transport_coefficient_tensor = 0.0;
           for (unsigned int d = 0; d < dim; ++d)
             transport_coefficient_tensor[d] = transport_coefficient_loc[d];
 #endif //TRANSPORT_COEFFICIENT
@@ -369,10 +371,10 @@ function_h.set_time(time);
     //  boundary_functions[i] = &function_g;
     //boundary_functions[0] = &zero_function;
     function_g.set_time(time);
+    boundary_functions[0] = &function_g;
     boundary_functions[1] = &function_g;
     boundary_functions[2] = &function_g;
     boundary_functions[3] = &function_g;
-    boundary_functions[4] = &function_g;
 
 
 
@@ -391,8 +393,8 @@ Parabolic::solve_time_step()
 {
   SolverControl solver_control(10000, 1e-12 * system_rhs.l2_norm());
 
-  SolverCG<TrilinosWrappers::MPI::Vector> solver(solver_control);
-  //SolverGMRES<TrilinosWrappers::MPI::Vector> solver(solver_control);
+  //SolverCG<TrilinosWrappers::MPI::Vector> solver(solver_control);
+  SolverGMRES<TrilinosWrappers::MPI::Vector> solver(solver_control);
   TrilinosWrappers::PreconditionSSOR      preconditioner;
   preconditioner.initialize(
     lhs_matrix, TrilinosWrappers::PreconditionSSOR::AdditionalData(1.0));
@@ -453,7 +455,7 @@ Parabolic::solve()
       pcout << "n = " << std::setw(3) << time_step << ", t = " << std::setw(5)
             << time << ":" << std::flush;
       
-      assemble_matrices(time);
+      //assemble_matrices(time);
       assemble_rhs(time);
       solve_time_step();
       output(time_step);
