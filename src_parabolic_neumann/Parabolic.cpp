@@ -146,15 +146,13 @@ Parabolic::assemble_matrices(const double &time)
 #endif //TRANSPORT_COEFFICIENT
 
 #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-          //Vector<double> transport_coefficient_loc(dim);
-          transport_coefficient_loc = 0.0;
-          transport_coefficient.vector_value(fe_values.quadrature_point(q),
-                                    transport_coefficient_loc);
+          Vector<double> cons_transport_coefficient_loc(dim);
+          cons_transport_coefficient.vector_value(fe_values.quadrature_point(q),
+                                    cons_transport_coefficient_loc);
 
-          //Tensor<1, dim> transport_coefficient_tensor;
-          transport_coefficient_tensor = 0.0;
+          Tensor<1, dim> cons_transport_coefficient_tensor;
           for (unsigned int d = 0; d < dim; ++d)
-            transport_coefficient_tensor[d] = transport_coefficient_loc[d];
+            cons_transport_coefficient_tensor[d] = cons_transport_coefficient_loc[d];
 #endif //TRANSPORT_COEFFICIENT
           // Evaluate coefficients on this quadrature node.
 #ifdef MUCOEFFICIENT
@@ -183,7 +181,7 @@ Parabolic::assemble_matrices(const double &time)
 #endif //TRANSPORT_COEFFICIENT
 
 #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-              cell_stiffness_matrix(i, j) -= scalar_product(transport_coefficient_tensor,
+              cell_stiffness_matrix(i, j) -= scalar_product(cons_transport_coefficient_tensor,
                                                   fe_values.shape_grad(i,q)) 
                                 * fe_values.shape_value(j,q) 
                                 * fe_values.JxW(q);

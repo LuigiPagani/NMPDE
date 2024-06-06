@@ -13,10 +13,10 @@ main(int argc, char *argv[])
   const unsigned int               mpi_rank =
     Utilities::MPI::this_mpi_process(MPI_COMM_WORLD);
 
-  const unsigned int degree = 2;
+  const unsigned int degree = 1;
 
   double T     = 0.5;
-  double theta = 1.0;
+  double theta = 2.0;
 
   const std::vector<double> deltat_vector = {
     0.25, 0.125, 0.0625, 0.03125, 0.015625};
@@ -25,7 +25,7 @@ main(int argc, char *argv[])
 
   for (const auto &deltat : deltat_vector)
     {
-      Parabolic problem("../mesh/mesh-square-h0.100000.msh", degree, T, deltat, theta);
+      Parabolic problem("../mesh/mesh-square-h0.012500.msh", degree, T, deltat, theta);
 
       problem.setup();
       problem.solve();
@@ -104,8 +104,8 @@ main(int argc, char *argv[])
   std::ofstream convergence_file("convergence.csv");
   convergence_file << "h,eL2,eH1" << std::endl;
 
-  T =      1e-1;
-  double deltat = 1e-4;
+  T =      5e-5;
+  double deltat = 1e-6;
 
   for (unsigned int i = 0; i < meshes.size(); ++i)
     {
