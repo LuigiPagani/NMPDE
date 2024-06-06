@@ -288,10 +288,16 @@ protected:
 
   // Diffusion coefficient.
   DiffusionCoefficient diffusion_coefficient;
-  
+
+#ifdef TRANSPORT_COEFFICIENT  
   TransportCoefficient transport_coefficient;
+#endif //TRANSPORT_COEFFICIENT
+
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
 
   Cons_TransportCoefficient cons_transport_coefficient;
+
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 #ifdef ROBIN
   FunctionGamma function_gamma;
