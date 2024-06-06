@@ -73,10 +73,8 @@ public:
     vector_value(const Point<dim> & /*p*/,
                  Vector<double> &values) const override
     {
-      for (unsigned int i = 0; i < dim - 1; ++i)
         values[0] = 1.0;
-
-      values[1] = 1.0;
+        values[1] = 1.0;
     }
 
     virtual double
@@ -88,9 +86,30 @@ public:
       else
         return 1.0;
     }
+  };
 
-  protected:
-    const double g = 0.5;
+
+   class Cons_TransportCoefficient : public Function<dim>
+  {
+  public:
+    virtual void
+    vector_value(const Point<dim> & /*p*/,
+                 Vector<double> &values) const override
+    {
+      for (unsigned int i = 0; i < dim - 1; ++i)
+        values[0] = 1.0;
+        values[1] = 1.0;
+    }
+
+    virtual double
+    value(const Point<dim> & /*p*/,
+          const unsigned int component = 0) const override
+    {
+      if (component == 0)
+        return 1.0;
+      else
+        return 1.0;
+    }
   };
 
 #ifdef REACTION_COEFFICIENT
@@ -268,6 +287,8 @@ protected:
   DiffusionCoefficient diffusion_coefficient;
   
   TransportCoefficient transport_coefficient;
+
+  Cons_TransportCoefficient cons_transport_coefficient;
 
 #ifdef ROBIN
   FunctionGamma function_gamma;

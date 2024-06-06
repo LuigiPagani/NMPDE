@@ -175,15 +175,15 @@ Elliptic::assemble()
 #endif
 
 #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-          //Vector<double> transport_coefficient_loc(dim);
+          Vector<double> cons_transport_coefficient_loc(dim);
           //transport_coefficient_loc = 0.0;
-          transport_coefficient.vector_value(fe_values.quadrature_point(q),
-                                    transport_coefficient_loc);
+          cons_transport_coefficient.vector_value(fe_values.quadrature_point(q),
+                                    cons_transport_coefficient_loc);
 
-          //Tensor<1, dim> transport_coefficient_tensor;
-          transport_coefficient_tensor=0.0;
+          Tensor<1, dim> cons_transport_coefficient_tensor;
+          //cons_transport_coefficient_tensor=0.0;
           for (unsigned int d = 0; d < dim; ++d)
-            transport_coefficient_tensor[d] = transport_coefficient_loc[d];
+            cons_transport_coefficient_tensor[d] = cons_transport_coefficient_loc[d];
 #endif
 
           // Here we iterate over *local* DoF indices.
@@ -218,7 +218,7 @@ Elliptic::assemble()
 #endif //REACTION_COEFFICIENT
 
 #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-              cell_matrix(i, j) -= scalar_product(transport_coefficient_tensor,
+              cell_matrix(i, j) -= scalar_product(cons_transport_coefficient_tensor,
                                                   fe_values.shape_grad(i,q)) 
                                 * fe_values.shape_value(j,q) 
                                 * fe_values.JxW(q);
@@ -349,7 +349,7 @@ Elliptic::solve()
 #ifndef CG
   // Here we specify the maximum number of iterations of the iterative solver,
   // and its tolerance.
-  SolverControl solver_control(5000, 1.0e-12*system_rhs.l2_norm());
+  SolverControl solver_control(10000, 1.0e-12*system_rhs.l2_norm());
 
   // Since the system matrix is symmetric and positive definite, we solve the
   // system using the conjugate gradient method.
