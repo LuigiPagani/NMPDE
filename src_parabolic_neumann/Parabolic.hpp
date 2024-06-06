@@ -61,7 +61,7 @@ public:
   };
 #endif //MUCOEFFICIENT
 
-  // transportin coefficient.
+#ifdef TRANSPORT_COEFFICIENT
   class TransportCoefficient : public Function<dim>
   {
   public:
@@ -84,8 +84,10 @@ public:
     }
 
   };
+#endif //TRANSPORT_COEFFICIENT
 
 
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
    class ConsTransportCoefficient : public Function<dim>
   {
   public:
@@ -108,6 +110,7 @@ public:
     }
 
   };
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 
 
@@ -306,10 +309,14 @@ protected:
   FunctionMu mu;
 #endif //MUCOEFFICIENT
 
-  // transport coefficient.
-  TransportCoefficient transport_coefficient;
 
+#ifdef TRANSPORT_COEFFICIENT
+  TransportCoefficient transport_coefficient;
+#endif //TRANSPORT_COEFFICIENT
+
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
   ConsTransportCoefficient cons_transport_coefficient;
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 #ifdef REACTION_COEFFICIENT
   // Reaction coefficient.

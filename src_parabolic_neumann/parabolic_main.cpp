@@ -13,10 +13,10 @@ main(int argc, char *argv[])
   const unsigned int               mpi_rank =
     Utilities::MPI::this_mpi_process(MPI_COMM_WORLD);
 
-  const unsigned int degree = 1;
+  const unsigned int degree = 2;
 
   double T     = 0.5;
-  double theta = 2.0;
+  double theta = 1.0;
 
   const std::vector<double> deltat_vector = {
     0.25, 0.125, 0.0625, 0.03125, 0.015625};

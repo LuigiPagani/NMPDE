@@ -66,6 +66,7 @@ public:
     }
   };
 
+#ifdef TRANSPORT_COEFFICIENT
   class TransportCoefficient : public Function<dim>
   {
   public:
@@ -87,8 +88,9 @@ public:
         return 1.0;
     }
   };
+#endif //TRANSPORT_COEFFICIENT
 
-
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
    class Cons_TransportCoefficient : public Function<dim>
   {
   public:
@@ -111,6 +113,7 @@ public:
         return 1.0;
     }
   };
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 #ifdef REACTION_COEFFICIENT
   // Reaction coefficient.
