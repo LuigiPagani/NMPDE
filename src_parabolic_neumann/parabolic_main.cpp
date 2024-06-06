@@ -104,20 +104,17 @@ main(int argc, char *argv[])
   std::ofstream convergence_file("convergence.csv");
   convergence_file << "h,eL2,eH1" << std::endl;
 
-  T =      1e-2;
-  double deltat = 1e-3;
+  T =      1e-1;
+  double deltat = 1e-4;
 
   for (unsigned int i = 0; i < meshes.size(); ++i)
     {
   
-  Parabolic problem(meshes[i], degree, T, deltat,theta);
+    Parabolic problem(meshes[i], degree, T, deltat,theta);
 
       problem.setup();
-      //problem.assemble();
       problem.solve();
-      //problem.output();
 
-      // Only for Exercise 1:
       const double error_L2 = problem.compute_error(VectorTools::L2_norm);
       const double error_H1 = problem.compute_error(VectorTools::H1_norm);
 
@@ -129,16 +126,12 @@ main(int argc, char *argv[])
                        << std::endl;
     }
 
-  // // Only for Exercise 1:
   table.evaluate_all_convergence_rates(ConvergenceTable::reduction_rate_log2);
   table.set_scientific("L2", true);
   table.set_scientific("H1", true);
   table.write_text(std::cout);
 
   #endif //SPATIAL_CONVERGENCE
-
-  
-
 
   return 0;
 }
@@ -152,12 +145,12 @@ main(int argc, char *argv[])
 {
   Utilities::MPI::MPI_InitFinalize mpi_init(argc, argv);
 
-/*   const std::string  mesh_file_name = "../mesh/mesh-square-h0.012500.msh";
- */  
-  const std::string  mesh_file_name = "../mesh/square_mesh.msh";
-  const unsigned int degree         = 1;
+  const std::string  mesh_file_name = "../mesh/mesh-square-h0.012500.msh";
+  
+  //const std::string  mesh_file_name = "../mesh/square_mesh.msh";
+  const unsigned int degree         = 2;
   const double T      = 2.0;
-  const double deltat = 0.1;
+  const double deltat = 0.01;
   const double theta  = 0.5;
 
   Parabolic problem(mesh_file_name, degree, T, deltat, theta);

@@ -34,11 +34,11 @@ using namespace dealii;
 #define NEUMANN
 #define ROBIN
 #define CONVERGENCE
-#define SPATIAL_CONVERGENCE
+//#define SPATIAL_CONVERGENCE
 #define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT
 #define REACTION_COEFFICIENT
-//#define CONSERVATIVE_TRANSPORT_COEFFICIENT
+#define CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 // Class representing the non-linear diffusion problem.
 class Parabolic
@@ -83,9 +83,6 @@ public:
         return 1.0;
     }
 
-
-  //protected:
-  //  const double g = 0.5;
   };
 
 
@@ -139,7 +136,7 @@ public:
           const unsigned int /*component*/ = 0) const override
     {   
         double t = get_time();
-        return 4.0* std::exp(-t);
+        return 4.0*std::exp(-t);
     }
   };
 
@@ -181,7 +178,8 @@ public:
     virtual double
     value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
     {
-      return 0.0;
+      double time = get_time();
+      return std::exp(-get_time());
     }
   };
 #endif //NEUMANN
@@ -205,12 +203,10 @@ public:
       Tensor<1, dim> result;
 
       // duex / dx
-      result[0] = 2 * M_PI * std::exp(-M_PI * get_time()) *
-          std::cos(2 * M_PI * p[0]) * std::cos(M_PI * p[1]);
+      result[0] =0.0;
 
       // duex / dy
-      result[1] = -M_PI * std::exp(-M_PI * get_time()) *
-          std::sin(2 * M_PI * p[0]) * std::sin(M_PI * p[1]);
+      result[1] = 0.0;
 
 
       // duex / dz

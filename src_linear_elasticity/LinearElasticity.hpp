@@ -45,10 +45,11 @@ public:
   {
   public:
     virtual double
-    value(const Point<dim> & /*p*/,
+    value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
+      return p[0]+p[1];
+      // return 1.0;
     }
   };
 
@@ -57,10 +58,11 @@ public:
   {
   public:
     virtual double
-    value(const Point<dim> & /*p*/,
+    value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 10.0;
+      return 10.0*(p[0]+p[1]);
+      // return 1.0;
     }
   };
 
