@@ -433,7 +433,7 @@ Parabolic::solve()
 
     //exact_solution.set_time(time);
     exact_solution.set_time(time);
-    VectorTools::interpolate(dof_handler, exact_solution, solution_owned);
+    VectorTools::interpolate(dof_handler, u_0, solution_owned);
     solution = solution_owned;
 
     // Output the initial solution.
