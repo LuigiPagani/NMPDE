@@ -34,12 +34,11 @@
 using namespace dealii;
 
 //#define CG
-#define TRANSPORT_COEFFICIENT
-//#define REACTION_COEFFICIENT
+//#define TRANSPORT_COEFFICIENT
+#define REACTION_COEFFICIENT
 #define NEUMANN
 #define ROBIN
-//ls
-//#define CONSERVATIVE_TRANSPORT_COEFFICIENT
+#define CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 
 /**
@@ -52,6 +51,7 @@ public:
   static constexpr unsigned int dim = 2;
 
   // transportin coefficient.
+  #ifdef TRANSPORT_COEFFICIENT
   class TransportCoefficient : public Function<dim>
   {
   public:
@@ -60,9 +60,9 @@ public:
                  Vector<double> &values) const override
     {
       for (unsigned int i = 0; i < dim - 1; ++i)
-      values[0] = 0.0;
+      values[0] = 1.0;
 
-      values[1] = 2.0;
+      values[1] = 1.0;
     }
 
     virtual double
@@ -74,10 +74,37 @@ public:
       else
         return 2.0;
     }
-
-  protected:
-    const double g = 0.5;
   };
+  #endif //TRANSPORT_COEFFICIENT
+
+  #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+
+  class ConsTransportCoefficient : public Function<dim>
+  {
+  public:
+    virtual void
+    vector_value(const Point<dim> & /*p*/,
+                 Vector<double> &values) const override
+    {
+      for (unsigned int i = 0; i < dim - 1; ++i)
+      values[0] = 1.0;
+
+      values[1] = 1.0;
+    }
+
+    virtual double
+    value(const Point<dim> & /*p*/,
+          const unsigned int component = 0) const override
+    {
+      if (component == 0)
+        return 0.0;
+      else
+        return 2.0;
+    }
+  };
+
+  #endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
+
 
   // Forcing term.
   class ForcingTerm : public Function<dim>
@@ -220,8 +247,17 @@ protected:
 
   #endif //REACTION_COEFFICIENT
 
+#ifdef TRANSPORT_COEFFICIENT
 
   TransportCoefficient transport_coefficient;
+
+#endif //TRANSPORT_COEFFICIENT
+
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+
+ConsTransportCoefficient cons_transport_coefficient;
+
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 
   ForcingTerm forcing_term;

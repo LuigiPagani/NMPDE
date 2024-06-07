@@ -8,20 +8,20 @@ Poisson2D::setup()
     GridIn<dim> grid_in;
     grid_in.attach_triangulation(mesh);
 
-    std::ifstream grid_in_file("../mesh/m" +
-                               std::to_string(subdomain_id) + ".msh");
+    std::ifstream grid_in_file("../mesh/mg" +
+                               std::to_string(subdomain_id) + "_1d.msh");
 
     grid_in.read_msh(grid_in_file);
   }
 
   // Initialize the finite element space.
   {
-    fe = std::make_unique<FE_Q<dim>>(1);
-    quadrature = std::make_unique<QGauss<dim>>(2);
+    fe         = std::make_unique<FE_Q<dim>>(1);
+    quadrature = std::make_unique<QGaussSimplex<dim>>(2);
 
     
 #ifdef NEUMANN
-    quadrature_boundary = std::make_unique<QGauss<dim - 1>>(2);
+    quadrature_boundary = std::make_unique<QGaussSimplex<dim - 1>>(2);
 
     std::cout << "  Quadrature points per boundary cell = "
               << quadrature_boundary->size() << std::endl;
@@ -102,14 +102,22 @@ Poisson2D::assemble()
             transport_coefficient_tensor[d] = transport_coefficient_loc[d];
 #endif
 
+          #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+          Vector<double> cons_transport_coefficient_loc(dim);
+          cons_transport_coefficient.vector_value(fe_values.quadrature_point(q),
+                                    cons_transport_coefficient_loc);
+
+          Tensor<1, dim> cons_transport_coefficient_tensor;
+          for (unsigned int d = 0; d < dim; ++d)
+            cons_transport_coefficient_tensor[d] = cons_transport_coefficient_loc[d];
+#endif
+
           for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
               for (unsigned int j = 0; j < dofs_per_cell; ++j)
                 {
-                  cell_matrix(i, j) += diffusion_coefficient.value(
-                                       fe_values.quadrature_point(q))*
-                                       fe_values.shape_grad(i, q)    *
-                                       fe_values.shape_grad(j, q)    *
+                  cell_matrix(i, j) += fe_values.shape_grad(i, q) *
+                                       fe_values.shape_grad(j, q) *
                                        fe_values.JxW(q);
                   #ifdef TRANSPORT_COEFFICIENT
                   cell_matrix(i, j) += scalar_product(transport_coefficient_tensor,
@@ -117,6 +125,14 @@ Poisson2D::assemble()
                                     * fe_values.shape_value(i,q)
                                     * fe_values.JxW(q);
                   #endif //TRANSPORT_COEFFICIENT
+
+                  #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+              cell_matrix(i, j) -= scalar_product(cons_transport_coefficient_tensor,
+                                                  fe_values.shape_grad(i,q)) 
+                                * fe_values.shape_value(j,q) 
+                                * fe_values.JxW(q);
+
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 #ifdef REACTION_COEFFICIENT
                   cell_matrix(i, j) +=
@@ -153,11 +169,23 @@ Poisson2D::assemble()
 
               for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
                 for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                {
+                  
+                  #ifdef ROBIN
+                  for (unsigned int j = 0; j < dofs_per_cell; ++j){
+                    cell_matrix(i, j) +=
+                     function_gamma.value(fe_values_boundary.quadrature_point(q)) * 
+                     fe_values_boundary.shape_value(j, q) *
+                     fe_values_boundary.shape_value(i, q) * 
+                     fe_values_boundary.JxW(q);  
+                  } 
+                  #endif //ROBIN
                   cell_rhs(i) +=
                     function_h.value(
                     fe_values_boundary.quadrature_point(q)) * // h(xq)
                     fe_values_boundary.shape_value(i, q) *      // v(xq)
                     fe_values_boundary.JxW(q);                  // Jq wq
+                }
             }
         }
     }
@@ -181,24 +209,24 @@ Poisson2D::assemble()
   // Define boundary functions for each face of each subdomain.
   Functions::ConstantFunction<dim> function_bc_0(0);
   Functions::ConstantFunction<dim> function_bc_1(0);
-  Functions::ConstantFunction<dim> function_bc_2(0);
+  Functions::ConstantFunction<dim> function_bc_2(1);
   Functions::ConstantFunction<dim> function_bc_3(0);
   Functions::ConstantFunction<dim> function_bc_4(0);
   Functions::ConstantFunction<dim> function_bc_5(0);
-  Functions::ConstantFunction<dim> function_bc_6(0);
+  Functions::ConstantFunction<dim> function_bc_6(1);
   Functions::ConstantFunction<dim> function_bc_7(0);
 
   // Assign the boundary functions to the faces of the subdomain.
   if (subdomain_id == 0) {
-    boundary_functions[0] = &function_bc_0; // Face 0
+    //boundary_functions[0] = &function_bc_0; // Face 0
     //boundary_functions[1] = &function_bc_1; // Face 1
-    //boundary_functions[2] = &function_bc_2; // Face 2
-    //boundary_functions[3] = &function_bc_3; // Face 3
+    boundary_functions[2] = &function_bc_2; // Face 2
+    boundary_functions[3] = &function_bc_3; // Face 3
   } else {
     //boundary_functions[0] = &function_bc_4; // Face 0
-    boundary_functions[1] = &function_bc_5; // Face 1
-    //boundary_functions[2] = &function_bc_6; // Face 2
-    //boundary_functions[3] = &function_bc_7; // Face 3
+    //boundary_functions[1] = &function_bc_5; // Face 1
+    boundary_functions[2] = &function_bc_6; // Face 2
+    boundary_functions[3] = &function_bc_7; // Face 3
   }
 
   // interpolate_boundary_values fills the boundary_values map.

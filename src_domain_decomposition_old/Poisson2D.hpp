@@ -6,8 +6,8 @@
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 
-#include <deal.II/fe/fe_simplex_p.h>
 #include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/fe_simplex_p.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/fe/mapping_fe.h>
 
@@ -34,13 +34,11 @@
 
 using namespace dealii;
 
-//#define CG
+#define CG
 //#define TRANSPORT_COEFFICIENT
-#define REACTION_COEFFICIENT
+//#define REACTION_COEFFICIENT
 #define NEUMANN
 #define ROBIN
-#define CONSERVATIVE_TRANSPORT_COEFFICIENT
-
 
 /**
  * Class managing the differential problem.
@@ -51,8 +49,26 @@ public:
   // Physical dimension (1D, 2D, 3D)
   static constexpr unsigned int dim = 1;
 
-  // transportin coefficient.
+
+    // Diffusion coefficient
+  class DiffusionCoefficient : public Function<dim>
+  {
+  public:
+    // Constructor.
+    DiffusionCoefficient()
+    {}
+
+    // Evaluation.
+    virtual double
+    value(const Point<dim> & p, const unsigned int component = 0) const
+    {
+       return 1.0;
+      
+    }
+  };
+
   #ifdef TRANSPORT_COEFFICIENT
+  // transportin coefficient.
   class TransportCoefficient : public Function<dim>
   {
   public:
@@ -61,9 +77,9 @@ public:
                  Vector<double> &values) const override
     {
       for (unsigned int i = 0; i < dim - 1; ++i)
-      values[0] = 1.0;
+      values[0] = 0.0;
 
-      values[1] = 1.0;
+      values[1] = 2.0;
     }
 
     virtual double
@@ -75,37 +91,11 @@ public:
       else
         return 2.0;
     }
+
+  protected:
+    const double g = 0.5;
   };
-  #endif //TRANSPORT_COEFFICIENT
-
-  #ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-
-  class ConsTransportCoefficient : public Function<dim>
-  {
-  public:
-    virtual void
-    vector_value(const Point<dim> & /*p*/,
-                 Vector<double> &values) const override
-    {
-      for (unsigned int i = 0; i < dim - 1; ++i)
-      values[0] = 1.0;
-
-      values[1] = 1.0;
-    }
-
-    virtual double
-    value(const Point<dim> & /*p*/,
-          const unsigned int component = 0) const override
-    {
-      if (component == 0)
-        return 0.0;
-      else
-        return 2.0;
-    }
-  };
-
-  #endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
-
+#endif //TRANSPORT_COEFFICIENT
 
   // Forcing term.
   class ForcingTerm : public Function<dim>
@@ -120,34 +110,12 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
-
-    }
-  };
-
-  #ifdef ROBIN
-
-  class FunctionGamma : public Function<dim>
-  { public:
-    // Constructor.
-    FunctionGamma()
-    {}
-
-    // Evaluation.
-    virtual double
-    value(const Point<dim> &p,
-          const unsigned int /*component*/ = 0) const override
-    {
-      if(p[0] ==0.0)
-        return 1.0;
-      if(p[0] ==1.0)
-        return 1.0;
+     if(p[0] <= 0.25 && p[0]>0.125)
+      return -1;
       else
-        return 0.0;
+      return 0.0;
     }
   };
-
-  #endif //ROBIN
 
   #ifdef NEUMANN
    // Neumann boundary conditions.
@@ -242,24 +210,19 @@ protected:
   // ID of current subdomain (0 or 1).
   const unsigned int subdomain_id;
 
+  DiffusionCoefficient diffusion_coefficient;
+
   #ifdef REACTION_COEFFICIENT
 
   ReactionCoefficient reaction_coefficient;
 
   #endif //REACTION_COEFFICIENT
 
-#ifdef TRANSPORT_COEFFICIENT
+  #ifdef TRANSPORT_COEFFICIENT
 
   TransportCoefficient transport_coefficient;
 
-#endif //TRANSPORT_COEFFICIENT
-
-#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-
-ConsTransportCoefficient cons_transport_coefficient;
-
-#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
-
+  #endif //TRANSPORT_COEFFICIENT
 
   ForcingTerm forcing_term;
 
@@ -282,12 +245,6 @@ ConsTransportCoefficient cons_transport_coefficient;
   // h(x).
   FunctionH function_h;
 #endif //NEUMANN
-
-#ifdef ROBIN
-
-FunctionGamma function_gamma;
-
-#endif //ROBIN
 
 
   // DoF handler.
