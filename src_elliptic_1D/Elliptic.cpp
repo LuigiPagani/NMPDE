@@ -244,12 +244,9 @@ Elliptic::assemble()
           // If current face lies on the boundary, and its boundary ID (or
           // tag) is that of one of the Neumann boundaries, we assemble the
           // boundary integral.
-          if (cell->face(face_number)->at_boundary() &&
-              (cell->face(face_number)->boundary_id() == 0 ||
-               cell->face(face_number)->boundary_id() == 1 ||
-               cell->face(face_number)->boundary_id() == 2 ||
-              cell->face(face_number)->boundary_id() == 3))
+          if (cell->face(face_number)->at_boundary())
             {
+              printf("Boundary cell");
               fe_values_boundary.reinit(cell, face_number);
 
               for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
@@ -289,40 +286,36 @@ Elliptic::assemble()
     }
 
   // // Boundary conditions.
-  {
-    // We construct a map that stores, for each DoF corresponding to a
-    // Dirichlet condition, the corresponding value. E.g., if the Dirichlet
-    // condition is u_i = b, the map will contain the pair (i, b).
-    std::map<types::global_dof_index, double> boundary_values;
+  // {
+  //   // We construct a map that stores, for each DoF corresponding to a
+  //   // Dirichlet condition, the corresponding value. E.g., if the Dirichlet
+  //   // condition is u_i = b, the map will contain the pair (i, b).
+  //   std::map<types::global_dof_index, double> boundary_values;
 
-    // Then, we build a map that, for each boundary tag, stores the
-    // corresponding boundary function.
+  //   // Then, we build a map that, for each boundary tag, stores the
+  //   // corresponding boundary function.
 
-    std::map<types::boundary_id, const Function<dim> *> boundary_functions;
+  //   std::map<types::boundary_id, const Function<dim> *> boundary_functions;
 
-    Functions::ConstantFunction<dim> zero_function(0.0, dim);
-    Functions::ConstantFunction<dim> one_function(1.0, dim);
+  //   Functions::ConstantFunction<dim> zero_function(0.0, dim);
+  //   Functions::ConstantFunction<dim> one_function(1.0, dim);
 
-    boundary_functions[0] = &function_g;
-    boundary_functions[1] = &function_g;
-    //boundary_functions[2] = &function_g;
-    //boundary_functions[3] = &function_g;
+  //   boundary_functions[0] = &function_g;
+  //   boundary_functions[1] = &function_g;
+  //   //boundary_functions[2] = &function_g;
+  //   //boundary_functions[3] = &function_g;
     
+  //   // interpolate_boundary_values fills the boundary_values map.
+  //   VectorTools::interpolate_boundary_values(dof_handler,
+  //                                            boundary_functions,
+  //                                            boundary_values);
 
-
-
-
-    // interpolate_boundary_values fills the boundary_values map.
-    VectorTools::interpolate_boundary_values(dof_handler,
-                                             boundary_functions,
-                                             boundary_values);
-
-    // Finally, we modify the linear system to apply the boundary
-    // conditions. This replaces the equations for the boundary DoFs with
-    // the corresponding u_i = 0 equations.
-    MatrixTools::apply_boundary_values(
-      boundary_values, system_matrix, solution, system_rhs, true);
-  }
+  //   // Finally, we modify the linear system to apply the boundary
+  //   // conditions. This replaces the equations for the boundary DoFs with
+  //   // the corresponding u_i = 0 equations.
+  //   MatrixTools::apply_boundary_values(
+  //     boundary_values, system_matrix, solution, system_rhs, true);
+  // }
 }
 
 void

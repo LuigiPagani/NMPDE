@@ -1,5 +1,5 @@
 L = 1.0; // Line length.
-h = 0.00125; // Mesh size.
+h = 0.0125; // Mesh size.
 
 // Create one point at (0, 0, 0).
 Point(1) = {0, 0, 0, h};
