@@ -99,8 +99,8 @@ public:
                  Vector<double> &values) const override
     {
       for (unsigned int i = 0; i < dim - 1; ++i)
-        values[0] = -1.0;
-        values[1] = -1.0;
+        values[0] = -2.0;
+        values[1] = -2.0;
     }
 
     virtual double
@@ -108,9 +108,9 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return -1.0;
+        return -2.0;
       else
-        return -1.0;
+        return -2.0;
     }
   };
 #endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
@@ -148,7 +148,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return p[0]*p[1];
+      return p[0]*p[1]-p[0]-p[1];
     }
   };
 
