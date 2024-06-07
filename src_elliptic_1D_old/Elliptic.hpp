@@ -1,12 +1,14 @@
+#ifndef ELLIPTIC
 #define ELLIPTIC
 
 #include <deal.II/base/quadrature_lib.h>
+#include <deal.II/fe/fe_q.h>
+
 
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 
 #include <deal.II/fe/fe_simplex_p.h>
-#include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/fe/mapping_fe.h>
 
@@ -30,13 +32,12 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+
 //#define NEUMANN
-//#define ROBIN
-//#define CG
-#define CONVERGENCE
-#define CONSERVATIVE_TRANSPORT_COEFFICIENT
-#define TRANSPORT_COEFFICIENT
-#define REACTION_COEFFICIENT
+//#define CONVERGENCE
+//#define TRANSPORT_COEFFICIENT
+//#define REACTION_COEFFICIENT
+#define CG
 
 
 using namespace dealii;
@@ -60,14 +61,14 @@ public:
 
     // Evaluation.
     virtual double
-    value(const Point<dim> & p, const unsigned int component = 0) const
+    value(const Point<dim> & /*p*/, const unsigned int /*component*/ = 0) const
     {
-       return 1.0;
-      
+      return 1.0;
     }
   };
 
 #ifdef TRANSPORT_COEFFICIENT
+  // transportin coefficient.
   class TransportCoefficient : public Function<dim>
   {
   public:
@@ -75,8 +76,10 @@ public:
     vector_value(const Point<dim> & /*p*/,
                  Vector<double> &values) const override
     {
-        values[0] = 1.0;
-        //values[1] = 1.0;
+      for (unsigned int i = 0; i < dim - 1; ++i)
+        values[0] = -1.0;
+
+      values[1] = -1.0;
     }
 
     virtual double
@@ -84,35 +87,15 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 1.0;
+        return -1.0;
       else
-        return 1.0;
+        return -1.0;
     }
+
+  protected:
+    const double g = 0.5;
   };
 #endif //TRANSPORT_COEFFICIENT
-
-#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-   class Cons_TransportCoefficient : public Function<dim>
-  {
-  public:
-    virtual void
-    vector_value(const Point<dim> & /*p*/,
-                 Vector<double> &values) const override
-    {
-        values[0] = 1.0;
-    }
-
-    virtual double
-    value(const Point<dim> & /*p*/,
-          const unsigned int component = 0) const override
-    {
-      if (component == 0)
-        return 1.0;
-      else
-        return 1.0;
-    }
-  };
-#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 #ifdef REACTION_COEFFICIENT
   // Reaction coefficient.
@@ -146,31 +129,14 @@ public:
     virtual double
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
-    {
-      return p[0]+2.0;
+    { 
+      if(p[0] > 0.5){
+        return - sqrt(p[0]-0.5);
+      }else{
+        return 0;
+      }
     }
   };
-
-#ifdef ROBIN
-  class FunctionGamma : public Function<dim>
-  {
-  public:
-    // Constructor.
-    FunctionGamma()
-    {}
-
-    // Evaluation.
-    virtual double
-    value(const Point<dim> &p,
-          const unsigned int /*component*/ = 0) const override
-    {
-      return 1.0;
-
-    }
-  };
-
-  #endif //ROBIN
-
 
   // Dirichlet boundary conditions.
   class FunctionG : public Function<dim>
@@ -185,7 +151,7 @@ public:
     value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return p[0];
+      return 0;
     }
   };
 
@@ -201,27 +167,18 @@ public:
     // Evaluation:
     virtual double
     value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
-    {
-      if (p[0] == 0.0)
-      return -1.0;
-      else if (p[0] == 1.0)
-      return std::cos(1.0);
-      else if (p[1] == 0.0)
-      return 2.0 * std::sin(p[0]);
-      else if (p[1] == 1.0)
-      return 0.0;
-      else
-      return 0.0;
+    { 
+      return 1.0;
     }
   };
-
 #endif //NEUMANN
+
 
 #ifdef CONVERGENCE
   // Exact solution.
   class ExactSolution : public Function<dim>
-  {
-  public:
+{
+public:
     // Constructor.
     ExactSolution()
     {}
@@ -231,28 +188,35 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return p[0];
+        if(p[0]<=0.5){
+            return A*p[0];
+        }else{
+            return A*p[0]+4.0/15.0*pow((p[0]-0.5),2.5);
+        }
     }
 
     // Gradient evaluation.
     virtual Tensor<1, dim> gradient(const Point<dim> &p, const unsigned int /*component*/ = 0) const override
     {
-      Tensor<1, dim> result;
+        Tensor<1, dim> result;
 
-      // Gradient with respect to x
-      result[0] = 1.0;
+        // Gradient with respect to x
+        if(p[0]<=0.5){
+            result[0] = A;
+        }else{
+            result[0] = A + 4.0/6.0*pow((p[0]-0.5),1.5);
+        }
 
-      // Gradient with respect to y
-      result[1] = 1.0;
-
-      return result;
+        return result;
     }
-  };
-  #endif //CONVERGENCE
+    float A = -4.0/15.0 * pow((0.5),2.5);
+};
+#endif //CONVERGENCE
 
-  // Constructor.
-  Elliptic(const std::string &mesh_file_name_, const unsigned int &r_)
-    : mesh_file_name(mesh_file_name_)
+
+// Constructor.
+Elliptic(const unsigned int &N_, const unsigned int &r_)
+    : N(N_)
     , r(r_)
   {}
 
@@ -279,28 +243,19 @@ public:
 #endif
 
 protected:
-  // Path to the mesh file.
-  const std::string mesh_file_name;
+  
+  const unsigned int N;
+
 
   // Polynomial degree.
   const unsigned int r;
 
   // Diffusion coefficient.
   DiffusionCoefficient diffusion_coefficient;
-
-#ifdef TRANSPORT_COEFFICIENT  
+  
+#ifdef TRANSPORT_COEFFICIENT
   TransportCoefficient transport_coefficient;
 #endif //TRANSPORT_COEFFICIENT
-
-#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-
-  Cons_TransportCoefficient cons_transport_coefficient;
-
-#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
-
-#ifdef ROBIN
-  FunctionGamma function_gamma;
-#endif //ROBIN
 
 
 #ifdef REACTION_COEFFICIENT
@@ -348,3 +303,4 @@ protected:
 
 };
 
+#endif

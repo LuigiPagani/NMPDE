@@ -5,20 +5,21 @@ Elliptic::setup()
 {
   std::cout << "===============================================" << std::endl;
 
-  // Create the mesh.
+ // Create the mesh.
   {
-    std::cout << "Initializing the mesh from " << mesh_file_name << std::endl;
-
-    // Read the mesh from file:
-    GridIn<dim> grid_in;
-    grid_in.attach_triangulation(mesh);
-
-    std::ifstream mesh_file(mesh_file_name);
-    grid_in.read_msh(mesh_file);
-
+    std::cout << "Initializing the mesh" << std::endl;
+    GridGenerator::subdivided_hyper_cube(mesh, N + 1, 0.0, 1.0, true);
     std::cout << "  Number of elements = " << mesh.n_active_cells()
               << std::endl;
+
+    // Write the mesh to file.
+    const std::string mesh_file_name = "mesh-" + std::to_string(N + 1) + ".vtk";
+    GridOut           grid_out;
+    std::ofstream     grid_out_file(mesh_file_name);
+    grid_out.write_vtk(mesh, grid_out_file);
+    std::cout << "  Mesh saved to " << mesh_file_name << std::endl;
   }
+
 
   std::cout << "-----------------------------------------------" << std::endl;
 
@@ -35,13 +36,13 @@ Elliptic::setup()
               << std::endl;
 
     // Construct the quadrature formula of the appopriate degree of exactness.
-    quadrature = std::make_unique<QGaussSimplex<dim>>(r + 1);
+    quadrature = std::make_unique<QGauss<dim>>(r + 1);
 
     std::cout << "  Quadrature points per cell = " << quadrature->size()
               << std::endl;
 
 #ifdef NEUMANN
-    quadrature_boundary = std::make_unique<QGaussSimplex<dim - 1>>(r + 1);
+    quadrature_boundary = std::make_unique<QGauss<dim - 1>>(r + 1);
 
     std::cout << "  Quadrature points per boundary cell = "
               << quadrature_boundary->size() << std::endl;
@@ -165,25 +166,12 @@ Elliptic::assemble()
           
 #ifdef TRANSPORT_COEFFICIENT
           Vector<double> transport_coefficient_loc(dim);
-          //transport_coefficient_loc = 0.0;
           transport_coefficient.vector_value(fe_values.quadrature_point(q),
                                     transport_coefficient_loc);
 
           Tensor<1, dim> transport_coefficient_tensor;
           for (unsigned int d = 0; d < dim; ++d)
             transport_coefficient_tensor[d] = transport_coefficient_loc[d];
-#endif
-
-#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-          Vector<double> cons_transport_coefficient_loc(dim);
-          //transport_coefficient_loc = 0.0;
-          cons_transport_coefficient.vector_value(fe_values.quadrature_point(q),
-                                    cons_transport_coefficient_loc);
-
-          Tensor<1, dim> cons_transport_coefficient_tensor;
-          //cons_transport_coefficient_tensor=0.0;
-          for (unsigned int d = 0; d < dim; ++d)
-            cons_transport_coefficient_tensor[d] = cons_transport_coefficient_loc[d];
 #endif
 
           // Here we iterate over *local* DoF indices.
@@ -216,65 +204,42 @@ Elliptic::assemble()
                     fe_values.shape_value(j, q) *      // phi_j
                     fe_values.JxW(q);                  // dx
 #endif //REACTION_COEFFICIENT
-
-#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
-              cell_matrix(i, j) -= scalar_product(cons_transport_coefficient_tensor,
-                                                  fe_values.shape_grad(i,q)) 
-                                * fe_values.shape_value(j,q) 
-                                * fe_values.JxW(q);
-
-#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
-
-
                 }
+
               cell_rhs(i) += forcing_term.value(fe_values.quadrature_point(q)) *
                              fe_values.shape_value(i, q) * fe_values.JxW(q);
             }
         }
 
 #ifdef NEUMANN
-  // If the cell is adjacent to the boundary...
-  if (cell->at_boundary())
-    {
-      // ...we loop over its edges (referred to as faces in the deal.II
-      // jargon).
-      for (unsigned int face_number = 0; face_number < cell->n_faces();
-           ++face_number)
+      // If the cell is adjacent to the boundary...
+      if (cell->at_boundary())
         {
-          // If current face lies on the boundary, and its boundary ID (or
-          // tag) is that of one of the Neumann boundaries, we assemble the
-          // boundary integral.
-          if (cell->face(face_number)->at_boundary() &&
-              (cell->face(face_number)->boundary_id() == 0 ||
-               cell->face(face_number)->boundary_id() == 1 ||
-               cell->face(face_number)->boundary_id() == 2 ||
-              cell->face(face_number)->boundary_id() == 3))
+          // ...we loop over its edges (referred to as faces in the deal.II
+          // jargon).
+          for (unsigned int face_number = 0; face_number < cell->n_faces();
+               ++face_number)
             {
-              fe_values_boundary.reinit(cell, face_number);
-
-              for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
-                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+              // If current face lies on the boundary, and its boundary ID (or
+              // tag) is that of one of the Neumann boundaries, we assemble the
+              // boundary integral.
+              if (cell->face(face_number)->at_boundary() &&
+                  (cell->face(face_number)->boundary_id() == 1 ||
+                   cell->face(face_number)->boundary_id() == 3))
                 {
-                  #ifdef ROBIN
-                  for (unsigned int j = 0; j < dofs_per_cell; ++j){
-                    cell_matrix(i, j) +=
-                     function_gamma.value(fe_values_boundary.quadrature_point(q)) * 
-                     fe_values_boundary.shape_value(j, q) *
-                     fe_values_boundary.shape_value(i, q) * 
-                     fe_values_boundary.JxW(q);  
-                  }        
-                  #endif //ROBIN
-                  cell_rhs(i) +=
-                  function_h.value(
-                  fe_values_boundary.quadrature_point(q)) * // h(xq)
-                  fe_values_boundary.shape_value(i, q) *      // v(xq)
-                  fe_values_boundary.JxW(q);                  // Jq wq
+                  fe_values_boundary.reinit(cell, face_number);
+
+                  for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
+                    for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                      cell_rhs(i) +=
+                        function_h.value(
+                          fe_values_boundary.quadrature_point(q)) * // h(xq)
+                        fe_values_boundary.shape_value(i, q) *      // v(xq)
+                        fe_values_boundary.JxW(q);                  // Jq wq
                 }
             }
         }
-    }
 #endif //NEUMANN
-
 
       // At this point the local matrix and vector are constructed: we
       // need to sum them into the global matrix and vector. To this end,
@@ -288,7 +253,7 @@ Elliptic::assemble()
       system_rhs.add(dof_indices, cell_rhs);
     }
 
-  // // Boundary conditions.
+  // Boundary conditions.
   {
     // We construct a map that stores, for each DoF corresponding to a
     // Dirichlet condition, the corresponding value. E.g., if the Dirichlet
@@ -300,17 +265,10 @@ Elliptic::assemble()
 
     std::map<types::boundary_id, const Function<dim> *> boundary_functions;
 
-    Functions::ConstantFunction<dim> zero_function(0.0, dim);
-    Functions::ConstantFunction<dim> one_function(1.0, dim);
+    //Functions::ZeroFunction<dim> zero_function(dim);
 
     boundary_functions[0] = &function_g;
     boundary_functions[1] = &function_g;
-    //boundary_functions[2] = &function_g;
-    //boundary_functions[3] = &function_g;
-    
-
-
-
 
     // interpolate_boundary_values fills the boundary_values map.
     VectorTools::interpolate_boundary_values(dof_handler,
@@ -331,7 +289,7 @@ Elliptic::solve()
   #ifdef CG
   std::cout << "===============================================" << std::endl;
 
-  SolverControl solver_control(10000,  1e-6 * system_rhs.l2_norm() );
+  SolverControl solver_control(10000, 1e-12 );
 
   // Since the system matrix is symmetric and positive definite, we solve the
   // system using the conjugate gradient method.
@@ -349,7 +307,7 @@ Elliptic::solve()
 #ifndef CG
   // Here we specify the maximum number of iterations of the iterative solver,
   // and its tolerance.
-  SolverControl solver_control(100000, 1.0e-12*system_rhs.l2_norm());
+  SolverControl solver_control(5000, 1.0e-12*system_rhs.l2_norm());
 
   // Since the system matrix is symmetric and positive definite, we solve the
   // system using the conjugate gradient method.
@@ -388,7 +346,7 @@ Elliptic::output() const
 
   // Then, use one of the many write_* methods to write the file in an
   // appropriate format.
-  const std::filesystem::path mesh_path(mesh_file_name);
+  const std::filesystem::path mesh_path("N");
   const std::string           output_file_name =
     "output-" + mesh_path.stem().string() + ".vtk";
   std::ofstream output_file(output_file_name);
@@ -410,7 +368,7 @@ Elliptic::compute_error(const VectorTools::NormType &norm_type) const
   // The error is an integral, and we approximate that integral using a
   // quadrature formula. To make sure we are accurate enough, we use a
   // quadrature formula with one node more than what we used in assembly.
-  const QGaussSimplex<dim> quadrature_error(r + 2);
+  const QGauss<dim> quadrature_error(r + 2);
 
   // First we compute the norm on each element, and store it in a vector.
   Vector<double> error_per_cell(mesh.n_active_cells());
