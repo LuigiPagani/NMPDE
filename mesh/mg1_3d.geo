@@ -4,7 +4,7 @@ Lz = 0.5; // Parallelepiped length along z-axis.
 h = 0.0125; // Mesh size.
 
 // Create one point at (0.75, 0, 0).
-Point(1) = {0.75, 0, 0, h};
+Point(1) = {0, 0, 0, h};
 
 // Extrude the point along x to create one side. The Layers option indicates the 
 // number of mesh subdivisions along the extrusion.
