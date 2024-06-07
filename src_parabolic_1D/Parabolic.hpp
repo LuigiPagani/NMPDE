@@ -9,8 +9,8 @@
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 
-#include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_simplex_p.h>
+#include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_system.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/fe/fe_values_extractors.h>
@@ -33,11 +33,13 @@
 using namespace dealii;
 
 #define NEUMANN
+#define ROBIN
 #define CONVERGENCE
-#define SPATIAL_CONVERGENCE
+//#define SPATIAL_CONVERGENCE
 #define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT
 #define REACTION_COEFFICIENT
+#define CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 // Class representing the non-linear diffusion problem.
 class Parabolic
@@ -55,13 +57,12 @@ public:
     value(const Point<dim> & /*p*/,
           const unsigned int /*component*/ = 0) const override
     {
-      return 3.0;
+      return 1.0;
     }
   };
 #endif //MUCOEFFICIENT
 
 #ifdef TRANSPORT_COEFFICIENT
-  // transportin coefficient.
   class TransportCoefficient : public Function<dim>
   {
   public:
@@ -69,8 +70,8 @@ public:
     vector_value(const Point<dim> & /*p*/,
                  Vector<double> &values) const override
     {
-      values[0] = 0.1;
-      //values[1] = 0.2;
+      values[0] = 1.0;
+      //values[1] = 1.0;
     }
 
     virtual double
@@ -78,15 +79,42 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 0.1;
+        return 1.0;
       else
-        return 0.2;
+        return 1.0;
     }
 
-  //protected:
-  //  const double g = 0.5;
   };
 #endif //TRANSPORT_COEFFICIENT
+
+
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+   class ConsTransportCoefficient : public Function<dim>
+  {
+  public:
+    virtual void
+    vector_value(const Point<dim> & /*p*/,
+                 Vector<double> &values) const override
+    {
+      values[0] = 1.0;
+      //values[1] = 1.0;
+    }
+
+    virtual double
+    value(const Point<dim> & /*p*/,
+          const unsigned int component = 0) const override
+    {
+      if (component == 0)
+        return 1.0;
+      else
+        return 1.0;
+    }
+
+  };
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
+
+
+
 
 #ifdef REACTION_COEFFICIENT
   // Reaction coefficient.
@@ -107,6 +135,27 @@ public:
   };
 #endif //REACTION_COEFFICIENT
 
+
+#ifdef ROBIN
+  class FunctionGamma : public Function<dim>
+  {
+  public:
+    // Constructor.
+    FunctionGamma()
+    {}
+
+    // Evaluation.
+    virtual double
+    value(const Point<dim> &p,
+          const unsigned int /*component*/ = 0) const override
+    {
+      return 1.0;
+
+    }
+  };
+
+  #endif //ROBIN
+
   // Function for the forcing term.
   class ForcingTerm : public Function<dim>
   {
@@ -114,8 +163,9 @@ public:
     virtual double
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
-    {
-        return 1.0;
+    {   
+      double t = get_time();
+      return 2.0* std::exp(-t);
     }
   };
 
@@ -127,7 +177,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 2.0;
+      return p[0];
     }
   };
 
@@ -136,10 +186,11 @@ public:
   {
   public:
     virtual double
-    value(const Point<dim> &/*p*/,
+    value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 2.0;
+      double t = get_time();
+      return 0.0;
     }
   };
 
@@ -156,7 +207,8 @@ public:
     virtual double
     value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
     {
-      return std::exp(-get_time());
+      double t = get_time();
+      return std::exp(-t);
     }
   };
 #endif //NEUMANN
@@ -169,7 +221,8 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 0;
+      double t = get_time();
+      return std::exp(-t)*p[0];
     }
 
     virtual Tensor<1, dim>
@@ -179,19 +232,14 @@ public:
       Tensor<1, dim> result;
 
       // duex / dx
-      result[0] = 2 * M_PI * std::sin(5 * M_PI * get_time()) *
-                  std::cos(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
-                  std::sin(4 * M_PI * p[2]);
+      result[0] =0.0;
 
       // duex / dy
-      result[1] = 3 * M_PI * std::sin(5 * M_PI * get_time()) *
-                  std::sin(2 * M_PI * p[0]) * std::cos(3 * M_PI * p[1]) *
-                  std::sin(4 * M_PI * p[2]);
+      result[1] = 0.0;
+
 
       // duex / dz
-      result[2] = 4 * M_PI * std::sin(5 * M_PI * get_time()) *
-                  std::sin(2 * M_PI * p[0]) * std::sin(3 * M_PI * p[1]) *
-                  std::cos(4 * M_PI * p[2]);
+      //result[2] = 0;
 
       return result;
     }
@@ -223,16 +271,14 @@ public:
   void
   solve();
 
-#ifdef CONVERGENCE
   // Compute the error.
   double
   compute_error(const VectorTools::NormType &norm_type);
-#endif //CONVERGENCE
 
 protected:
   // Assemble the mass and stiffness matrices.
   void
-  assemble_matrices();
+  assemble_matrices(const double &time);
 
   // Assemble the right-hand side of the problem.
   void
@@ -264,15 +310,24 @@ protected:
   FunctionMu mu;
 #endif //MUCOEFFICIENT
 
+
 #ifdef TRANSPORT_COEFFICIENT
-  // transport coefficient.
   TransportCoefficient transport_coefficient;
 #endif //TRANSPORT_COEFFICIENT
+
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+  ConsTransportCoefficient cons_transport_coefficient;
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 #ifdef REACTION_COEFFICIENT
   // Reaction coefficient.
   ReactionCoefficient reaction_coefficient;
 #endif //REACTION_COEFFICIENT
+
+#ifdef ROBIN
+  FunctionGamma function_gamma;
+  
+#endif //ROBIN
 
   // Forcing term.
   ForcingTerm forcing_term;
@@ -287,10 +342,10 @@ protected:
   ExactSolution exact_solution;
 
 
-#ifdef NEUMANN
-  // Quadrature formula used on boundary lines.
   std::unique_ptr<Quadrature<dim - 1>> quadrature_boundary;
 
+#ifdef NEUMANN
+  // Quadrature formula used on boundary lines.
   // h(x).
   FunctionH function_h;
 #endif //NEUMANN

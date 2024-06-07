@@ -13,10 +13,10 @@ main(int argc, char *argv[])
   const unsigned int               mpi_rank =
     Utilities::MPI::this_mpi_process(MPI_COMM_WORLD);
 
-  const unsigned int degree = 1;
+  const unsigned int degree = 2;
 
-  double T     = 1.0;
-  double theta = 0.5;
+  double T     = 0.5;
+  double theta = 1.0;
 
   const std::vector<double> deltat_vector = {
     0.25, 0.125, 0.0625, 0.03125, 0.015625};
@@ -25,7 +25,7 @@ main(int argc, char *argv[])
 
   for (const auto &deltat : deltat_vector)
     {
-      Parabolic problem("../mesh/mesh-cube-20.msh", degree, T, deltat, theta);
+      Parabolic problem("../mesh/m1.msh", degree, T, deltat, theta);
 
       problem.setup();
       problem.solve();
@@ -91,10 +91,10 @@ main(int argc, char *argv[])
     
   ConvergenceTable table;
 
-  const std::vector<std::string> meshes = {"../mesh/mesh-cube-5.msh",
-                                           "../mesh/mesh-cube-10.msh",
-                                           "../mesh/mesh-cube-20.msh",
-                                           "../mesh/mesh-cube-40.msh"};
+  const std::vector<std::string> meshes = {"../mesh/mesh-square-h0.100000.msh",
+                                           "../mesh/mesh-square-h0.050000.msh",
+                                           "../mesh/mesh-square-h0.025000.msh",
+                                           "../mesh/mesh-square-h0.012500.msh"};
   const std::vector<double>      h_vals = {0.1,
                                            0.05,
                                            0.025,
@@ -104,20 +104,17 @@ main(int argc, char *argv[])
   std::ofstream convergence_file("convergence.csv");
   convergence_file << "h,eL2,eH1" << std::endl;
 
-  T =      5e-4;
-  double deltat = 1e-4;
+  T =      5e-5;
+  double deltat = 1e-6;
 
   for (unsigned int i = 0; i < meshes.size(); ++i)
     {
   
-  Parabolic problem(meshes[i], degree, T, deltat,theta);
+    Parabolic problem(meshes[i], degree, T, deltat,theta);
 
       problem.setup();
-      //problem.assemble();
       problem.solve();
-      //problem.output();
 
-      // Only for Exercise 1:
       const double error_L2 = problem.compute_error(VectorTools::L2_norm);
       const double error_H1 = problem.compute_error(VectorTools::H1_norm);
 
@@ -129,16 +126,12 @@ main(int argc, char *argv[])
                        << std::endl;
     }
 
-  // // Only for Exercise 1:
   table.evaluate_all_convergence_rates(ConvergenceTable::reduction_rate_log2);
   table.set_scientific("L2", true);
   table.set_scientific("H1", true);
   table.write_text(std::cout);
 
   #endif //SPATIAL_CONVERGENCE
-
-  
-
 
   return 0;
 }
@@ -152,18 +145,25 @@ main(int argc, char *argv[])
 {
   Utilities::MPI::MPI_InitFinalize mpi_init(argc, argv);
 
-/*   const std::string  mesh_file_name = "../mesh/mesh-square-h0.012500.msh";
- */  
   const std::string  mesh_file_name = "../mesh/m1.msh";
+  
+  //const std::string  mesh_file_name = "../mesh/square_mesh.msh";
   const unsigned int degree         = 2;
   const double T      = 2.0;
-  const double deltat = 0.1;
+  const double deltat = 0.01;
   const double theta  = 0.5;
 
   Parabolic problem(mesh_file_name, degree, T, deltat, theta);
 
   problem.setup();
   problem.solve();
+
+  const double error_L2 = problem.compute_error(VectorTools::L2_norm);
+  const double error_H1 = problem.compute_error(VectorTools::H1_norm);
+  printf("L2 error: %e\n", error_L2);
+  printf("H1 error: %e\n", error_H1);
+
+
 
   return 0;
 }

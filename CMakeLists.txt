@@ -15,7 +15,7 @@ deal_ii_setup_target(elliptic)
 add_executable(elliptic_1D src_elliptic_1D/elliptic_main.cpp src_elliptic_1D/Elliptic.cpp)
 deal_ii_setup_target(elliptic_1D)
 
-add_executable(parabolic src_parabolic_neumann/parabolic_main.cpp src_parabolic_neumann/Parabolic.cpp)
+add_executable(parabolic src_parabolic/parabolic_main.cpp src_parabolic/Parabolic.cpp)
 deal_ii_setup_target(parabolic)
 
 add_executable(stokes src_stokes/stokes_main.cpp src_stokes/Stokes.cpp)
@@ -45,17 +45,17 @@ deal_ii_setup_target(nonlinear_steady)
 add_executable(domain_decomposition_1D src_domain_decomposition_1D/domain_decomposition_main.cpp src_domain_decomposition_1D/Poisson2D.cpp)
 deal_ii_setup_target(domain_decomposition_1D)
 
-add_executable(parabolic_1D src_parabolic_neumann_1D/parabolic_main.cpp src_parabolic_neumann_1D/Parabolic.cpp)
-deal_ii_setup_target(parabolic_1D)
-
-
 
 
 add_executable(stokes_td src_stokes_td/stokes_td_main.cpp src_stokes_td/stokes-time.cpp)
 deal_ii_setup_target(stokes_td)
 
 add_executable(stokes_si_td src_stokes_si_td/stokes_td_main.cpp src_stokes_si_td/stokes-time.cpp)
-deal_ii_setup_target(stokes_si_td)
+deal_ii_setup_target(stokes_si_td)  
+
+
+add_executable(parabolic_1D src_parabolic_1D/parabolic_main.cpp src_parabolic_1D/Parabolic.cpp)
+deal_ii_setup_target(parabolic_1D)
 
 
 

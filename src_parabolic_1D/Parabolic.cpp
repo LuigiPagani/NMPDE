@@ -36,13 +36,13 @@ Parabolic::setup()
     pcout << "  DoFs per cell              = " << fe->dofs_per_cell
           << std::endl;
 
-    quadrature = std::make_unique<QGauss<dim>>(r + 1);
+    quadrature = std::make_unique<QGaussSimplex<dim>>(r + 1);
 
     pcout << "  Quadrature points per cell = " << quadrature->size()
           << std::endl;
 
 #ifdef NEUMANN
-    quadrature_boundary = std::make_unique<QGauss<dim - 1>>(r + 1);
+    quadrature_boundary = std::make_unique<QGaussSimplex<dim - 1>>(r + 1);
 
     std::cout << "  Quadrature points per boundary cell = "
               << quadrature_boundary->size() << std::endl;
@@ -92,7 +92,7 @@ Parabolic::setup()
 }
 
 void
-Parabolic::assemble_matrices()
+Parabolic::assemble_matrices(const double &time)
 {
   pcout << "===============================================" << std::endl;
   pcout << "Assembling the system matrices" << std::endl;
@@ -104,6 +104,16 @@ Parabolic::assemble_matrices()
                           *quadrature,
                           update_values | update_gradients |
                             update_quadrature_points | update_JxW_values);
+  #ifdef ROBIN
+  // Since we need to compute integrals on the boundary for Neumann conditions,
+  // we also need a FEValues object to compute quantities on boundary edges
+  // (faces).
+  FEFaceValues<dim> fe_values_boundary(*fe,
+                                       *quadrature_boundary,
+                                       update_values |
+                                         update_quadrature_points |
+                                         update_JxW_values);
+#endif 
 
   FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
   FullMatrix<double> cell_stiffness_matrix(dofs_per_cell, dofs_per_cell);
@@ -134,6 +144,16 @@ Parabolic::assemble_matrices()
           for (unsigned int d = 0; d < dim; ++d)
             transport_coefficient_tensor[d] = transport_coefficient_loc[d];
 #endif //TRANSPORT_COEFFICIENT
+
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+          Vector<double> cons_transport_coefficient_loc(dim);
+          cons_transport_coefficient.vector_value(fe_values.quadrature_point(q),
+                                    cons_transport_coefficient_loc);
+
+          Tensor<1, dim> cons_transport_coefficient_tensor;
+          for (unsigned int d = 0; d < dim; ++d)
+            cons_transport_coefficient_tensor[d] = cons_transport_coefficient_loc[d];
+#endif //TRANSPORT_COEFFICIENT
           // Evaluate coefficients on this quadrature node.
 #ifdef MUCOEFFICIENT
           const double mu_loc = mu.value(fe_values.quadrature_point(q));
@@ -160,6 +180,14 @@ Parabolic::assemble_matrices()
                                     * fe_values.JxW(q);
 #endif //TRANSPORT_COEFFICIENT
 
+#ifdef CONSERVATIVE_TRANSPORT_COEFFICIENT
+              cell_stiffness_matrix(i, j) -= scalar_product(cons_transport_coefficient_tensor,
+                                                  fe_values.shape_grad(i,q)) 
+                                * fe_values.shape_value(j,q) 
+                                * fe_values.JxW(q);
+
+#endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
+
 #ifdef REACTION_COEFFICIENT
                   cell_stiffness_matrix(i, j) +=
                     reaction_coefficient.value(
@@ -172,6 +200,40 @@ Parabolic::assemble_matrices()
                 }
             }
         }
+      #ifdef ROBIN
+  // If the cell is adjacent to the boundary...
+  if (cell->at_boundary())
+    {
+      // ...we loop over its edges (referred to as faces in the deal.II
+      // jargon).
+      for (unsigned int face_number = 0; face_number < cell->n_faces();
+           ++face_number)
+        {
+          // If current face lies on the boundary, and its boundary ID (or
+          // tag) is that of one of the Neumann boundaries, we assemble the
+          // boundary integral.
+          if (cell->face(face_number)->at_boundary() &&
+              (cell->face(face_number)->boundary_id() == 1))
+            {
+              fe_values_boundary.reinit(cell, face_number);
+
+              for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
+                for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                { 
+                  for (unsigned int j = 0; j < dofs_per_cell; ++j){
+                    function_gamma.set_time(time);
+                    cell_stiffness_matrix(i, j) +=
+                     function_gamma.value(fe_values_boundary.quadrature_point(q)) * 
+                     fe_values_boundary.shape_value(j, q) *
+                     fe_values_boundary.shape_value(i, q) * 
+                     fe_values_boundary.JxW(q);  
+                  }        
+
+                }
+            }
+        }
+    }
+#endif //ROBIN
 
       cell->get_dof_indices(dof_indices);
 
@@ -253,8 +315,9 @@ Parabolic::assemble_rhs(const double &time)
                              fe_values.shape_value(i, q) * fe_values.JxW(q);
             }
         }
-
 #ifdef NEUMANN
+function_h.set_time(time);
+
       // If the cell is adjacent to the boundary...
       if (cell->at_boundary())
         {
@@ -266,17 +329,18 @@ Parabolic::assemble_rhs(const double &time)
               // If current face lies on the boundary, and its boundary ID (or
               // tag) is that of one of the Neumann boundaries, we assemble the
               // boundary integral.
-              if (cell->face(face_number)->at_boundary() &&
-                  (cell->face(face_number)->boundary_id() == 1) ||
-                  (cell->face(face_number)->boundary_id() == 3))
+              if (cell->face(face_number)->at_boundary() &&(
+                  (cell->face(face_number)->boundary_id() == 1) /* ||
+                  (cell->face(face_number)->boundary_id() == 3)) */))
                 {
                   fe_values_boundary.reinit(cell, face_number);
+                  
 
                   for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
                     for (unsigned int i = 0; i < dofs_per_cell; ++i)
                       cell_rhs(i) +=
                         function_h.value(
-                          fe_values_boundary.quadrature_point(q)) * // h(xq)
+                        fe_values_boundary.quadrature_point(q)) * // h(xq)
                         fe_values_boundary.shape_value(i, q) *      // v(xq)
                         fe_values_boundary.JxW(q);                  // Jq wq
                 }
@@ -293,7 +357,7 @@ Parabolic::assemble_rhs(const double &time)
   // Add the term that comes from the old solution.
   rhs_matrix.vmult_add(system_rhs, solution_owned);
 
-  // We apply Dirichlet boundary conditions to the algebraic system.
+  //We apply Dirichlet boundary conditions to the algebraic system.
   {
     std::map<types::global_dof_index, double> boundary_values;
 
@@ -302,8 +366,14 @@ Parabolic::assemble_rhs(const double &time)
     std::map<types::boundary_id, const Function<dim> *> boundary_functions;
     //for (unsigned int i = 0; i < 4; ++i)
     //  boundary_functions[i] = &function_g;
+    //boundary_functions[0] = &zero_function;
+    function_g.set_time(time);
     boundary_functions[0] = &function_g;
-    boundary_functions[2] = &function_g;
+    //boundary_functions[1] = &function_g;
+    //boundary_functions[2] = &function_g;
+
+
+
 
     VectorTools::interpolate_boundary_values(dof_handler,
                                              boundary_functions,
@@ -317,7 +387,7 @@ Parabolic::assemble_rhs(const double &time)
 void
 Parabolic::solve_time_step()
 {
-  SolverControl solver_control(10000, 1e-6 * system_rhs.l2_norm());
+  SolverControl solver_control(10000, 1e-12 * system_rhs.l2_norm());
 
   //SolverCG<TrilinosWrappers::MPI::Vector> solver(solver_control);
   SolverGMRES<TrilinosWrappers::MPI::Vector> solver(solver_control);
@@ -351,11 +421,11 @@ Parabolic::output(const unsigned int &time_step) const
 void
 Parabolic::solve()
 {
-  assemble_matrices();
-
   pcout << "===============================================" << std::endl;
 
   time = 0.0;
+  assemble_matrices(time);
+
 
   // Apply the initial condition.
   {
@@ -380,21 +450,21 @@ Parabolic::solve()
 
       pcout << "n = " << std::setw(3) << time_step << ", t = " << std::setw(5)
             << time << ":" << std::flush;
-
+      
+      assemble_matrices(time);
       assemble_rhs(time);
       solve_time_step();
       output(time_step);
     }
 }
 
-#ifdef CONVERGENCE
 double
 Parabolic::compute_error(const VectorTools::NormType &norm_type)
 {
   FE_Q<dim> fe_linear(1);
   MappingFE        mapping(fe_linear);
 
-  const QGauss<dim> quadrature_error = QGauss<dim>(r + 2);
+  const QGaussSimplex<dim> quadrature_error = QGaussSimplex<dim>(r + 2);
 
   exact_solution.set_time(time);
 
@@ -408,9 +478,8 @@ Parabolic::compute_error(const VectorTools::NormType &norm_type)
                                     norm_type);
 
   const double error =
-    VectorTools::compute_global_error(mesh, error_per_cell, norm_type);
+  VectorTools::compute_global_error(mesh, error_per_cell, norm_type);
 
   return error;
 }
 
-#endif //CONVERGENCE
