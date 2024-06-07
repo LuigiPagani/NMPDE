@@ -29,8 +29,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#define NEUMANN
-#define ROBIN
+//#define NEUMANN
+//#define ROBIN
 //#define CG
 #define CONVERGENCE
 #define CONSERVATIVE_TRANSPORT_COEFFICIENT
@@ -99,8 +99,8 @@ public:
                  Vector<double> &values) const override
     {
       for (unsigned int i = 0; i < dim - 1; ++i)
-        values[0] = 1.0;
-        values[1] = 1.0;
+        values[0] = -1.0;
+        values[1] = -1.0;
     }
 
     virtual double
@@ -108,9 +108,9 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 1.0;
+        return -1.0;
       else
-        return 1.0;
+        return -1.0;
     }
   };
 #endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
@@ -148,7 +148,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 2 * std::sqrt(2) * std::sin(p[0] + M_PI / 4);
+      return p[0]*p[1];
     }
   };
 
@@ -186,7 +186,7 @@ public:
     value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::sin(p[0]);
+      return p[0]*p[1];
     }
   };
 
@@ -232,7 +232,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::sin(p[0]);
+      return p[0]*p[1];
     }
 
     // Gradient evaluation.
