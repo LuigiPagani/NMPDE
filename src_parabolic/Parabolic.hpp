@@ -31,14 +31,14 @@
 
 using namespace dealii;
 
-#define NEUMANN
-#define ROBIN
-#define CONVERGENCE
+//#define NEUMANN
+//#define ROBIN
+//#define CONVERGENCE
 //#define SPATIAL_CONVERGENCE
-#define TRANSPORT_COEFFICIENT
+//#define TRANSPORT_COEFFICIENT
 #define MUCOEFFICIENT
-#define REACTION_COEFFICIENT
-#define CONSERVATIVE_TRANSPORT_COEFFICIENT
+//#define REACTION_COEFFICIENT
+//#define CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 // Class representing the non-linear diffusion problem.
 class Parabolic
@@ -56,7 +56,7 @@ public:
     value(const Point<dim> & /*p*/,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
+      return 0.05;
     }
   };
 #endif //MUCOEFFICIENT
@@ -164,7 +164,7 @@ public:
           const unsigned int /*component*/ = 0) const override
     {   
         double t = get_time();
-        return 4.0*std::exp(-t);
+        return p[0]*std::exp(-t);
     }
   };
 
@@ -176,7 +176,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return p[0]+p[1];
+      return std::sin(M_PI*0.5*p[0])*std::sin(M_PI*0.5*p[1]);
     }
   };
 
@@ -189,7 +189,7 @@ public:
           const unsigned int /*component*/ = 0) const override
     {
       double t = get_time();
-      return std::exp(-t)*(p[0]+p[1]);
+      return 0.0;
     }
   };
 
@@ -207,7 +207,14 @@ public:
     value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
     {
       double time = get_time();
-      return std::exp(-get_time());
+      if(p[0] ==0.0)
+        return -p[1]*std::exp(-time);
+      if(p[0] ==1.0)
+        return p[1]*std::exp(-time);
+      if(p[1] ==0.0)
+        return -p[0]*std::exp(-time);
+      if(p[1] ==1.0)
+        return p[0]*std::exp(-time);
     }
   };
 #endif //NEUMANN
@@ -221,7 +228,7 @@ public:
           const unsigned int /*component*/ = 0) const override
     {
       double t = get_time();
-      return std::exp(-t)*(p[0]+p[1]);
+      return p[0]*p[1]*std::exp(-t);
     }
 
     virtual Tensor<1, dim>

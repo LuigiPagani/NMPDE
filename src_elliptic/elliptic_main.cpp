@@ -63,7 +63,7 @@ int
 main(int /*argc*/, char * /*argv*/[])
 {
   const std::string mesh_file_name =
-    "../mesh/mg0.msh";
+    "../mesh/mesh-square-h0.100000.msh";
   const unsigned int r = 1;
 
   Elliptic problem(mesh_file_name, r);

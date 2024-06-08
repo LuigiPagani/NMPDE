@@ -34,7 +34,7 @@
 
 using namespace dealii;
 
-//#define NEUMANN_CONDITION
+#define NEUMANN_CONDITION
 
 // Class implementing a solver for the Stokes problem.
 class Stokes
@@ -78,7 +78,7 @@ public:
       value(const Point<dim> & /*p*/,
             const unsigned int component = 0) const override
       {
-        return 10.0;
+        return 0.0;
       }
   };
 
@@ -102,17 +102,17 @@ public:
     vector_value(const Point<dim> &p, Vector<double> &values) const override
     {
       // INITIAL VELOCITY
-      values[0] = -alpha * p[1] * (2.0 - p[1]) * (1.0 - p[2]) * (2.0 - p[2]);
-
-      values[0] =1.0;
+      //values[0] = -alpha * p[1] * (2.0 - p[1]) * (1.0 - p[2]) * (2.0 - p[2]);
+      values[0] =0.25-p[1]*p[1];
       values[1] = 0.0;
+      values[2] = 0.0;
     }
 
     virtual double
     value(const Point<dim> &p, const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 1.0;
+        return 0.25-p[1]*p[1];
       else
         return 0.0;
     }

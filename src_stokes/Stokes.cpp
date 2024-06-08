@@ -270,11 +270,8 @@ Stokes::assemble()
         {
           for (unsigned int f = 0; f < cell->n_faces(); ++f)
             {
-              if (cell->face(f)->at_boundary() &&
-                  (cell->face(f)->boundary_id() == 2||
-                   cell->face(f)->boundary_id() == 3||
-                    cell->face(f)->boundary_id() == 0||
-                    cell->face(f)->boundary_id() == 1))
+              if (cell->face(f)->at_boundary()&&
+                  (cell->face(f)->boundary_id() == 1))
                 {
                   fe_face_values.reinit(cell, f);
 
@@ -321,18 +318,17 @@ Stokes::assemble()
                                              boundary_functions,
                                              boundary_values,
                                              ComponentMask(
-                                               {true, true, true, false}));
+                                               {true, true, /*true,*/ false}));
 
     boundary_functions.clear();
     Functions::ZeroFunction<dim> zero_function(dim + 1);
-    boundary_functions[1] = &zero_function;
     boundary_functions[2] = &zero_function;
     boundary_functions[3] = &zero_function;    
     VectorTools::interpolate_boundary_values(dof_handler,
                                              boundary_functions,
                                              boundary_values,
                                              ComponentMask(
-                                               {true, true, true, false}));
+                                               {true, true,/* true,*/ false}));
 
     MatrixTools::apply_boundary_values(
       boundary_values, system_matrix, solution, system_rhs, false);
@@ -386,12 +382,12 @@ Stokes::solve()
   solution = solution_owned;
 
   // Subtract a constant from the pressure component of the solution
-  const double pressure_adjustment = 7.7666; // Define the constant to subtract
-  if (!solution.block(1).locally_owned_elements().is_empty()) {
-    for (auto index : solution.block(1).locally_owned_elements()) {
-      solution.block(1)[index] -= pressure_adjustment;
-    }
-  }
+  // const double pressure_adjustment = 7.7666; // Define the constant to subtract
+  // if (!solution.block(1).locally_owned_elements().is_empty()) {
+  //   for (auto index : solution.block(1).locally_owned_elements()) {
+  //     solution.block(1)[index] -= pressure_adjustment;
+  //   }
+  // }
 
   solution.compress(VectorOperation::insert); // Ensure changes are consistent across MPI processes
 

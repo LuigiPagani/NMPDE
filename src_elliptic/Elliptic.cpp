@@ -244,11 +244,10 @@ Elliptic::assemble()
           // If current face lies on the boundary, and its boundary ID (or
           // tag) is that of one of the Neumann boundaries, we assemble the
           // boundary integral.
-          if (cell->face(face_number)->at_boundary() &&
-              (cell->face(face_number)->boundary_id() == 0 ||
-               cell->face(face_number)->boundary_id() == 1 ||
-               cell->face(face_number)->boundary_id() == 2 ||
-              cell->face(face_number)->boundary_id() == 3))
+          if (cell->face(face_number)->at_boundary()&&
+           (cell->face(face_number)->boundary_id() == 0 ||
+            cell->face(face_number)->boundary_id() == 1 ||
+            cell->face(face_number) ->boundary_id()== 3))
             {
               fe_values_boundary.reinit(cell, face_number);
 
@@ -288,7 +287,7 @@ Elliptic::assemble()
       system_rhs.add(dof_indices, cell_rhs);
     }
 
-  // Boundary conditions.
+  //Boundary conditions.
   {
     // We construct a map that stores, for each DoF corresponding to a
     // Dirichlet condition, the corresponding value. E.g., if the Dirichlet
@@ -303,14 +302,8 @@ Elliptic::assemble()
     Functions::ConstantFunction<dim> zero_function(0.0, dim);
     Functions::ConstantFunction<dim> one_function(1.0, dim);
 
-    boundary_functions[0] = &function_g;
-    boundary_functions[1] = &function_g;
-    boundary_functions[2] = &function_g;
-    boundary_functions[3] = &function_g;
-    
-
-
-
+    boundary_functions[2] = &zero_function;
+  
 
     // interpolate_boundary_values fills the boundary_values map.
     VectorTools::interpolate_boundary_values(dof_handler,
@@ -331,7 +324,7 @@ Elliptic::solve()
   #ifdef CG
   std::cout << "===============================================" << std::endl;
 
-  SolverControl solver_control(10000,  1e-6 * system_rhs.l2_norm() );
+  SolverControl solver_control(100000,  1e-12 * system_rhs.l2_norm() );
 
   // Since the system matrix is symmetric and positive definite, we solve the
   // system using the conjugate gradient method.

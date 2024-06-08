@@ -15,8 +15,8 @@ main(int argc, char *argv[])
 
   const unsigned int degree = 2;
 
-  double T     = 0.5;
-  double theta = 1.0;
+  double T     = 2.0;
+  double theta = 0.5;
 
   const std::vector<double> deltat_vector = {
     0.25, 0.125, 0.0625, 0.03125, 0.015625};
@@ -150,19 +150,13 @@ main(int argc, char *argv[])
   //const std::string  mesh_file_name = "../mesh/square_mesh.msh";
   const unsigned int degree         = 2;
   const double T      = 2.0;
-  const double deltat = 0.01;
+  const double deltat = 0.25;
   const double theta  = 0.5;
 
   Parabolic problem(mesh_file_name, degree, T, deltat, theta);
 
   problem.setup();
   problem.solve();
-
-  const double error_L2 = problem.compute_error(VectorTools::L2_norm);
-  const double error_H1 = problem.compute_error(VectorTools::H1_norm);
-  printf("L2 error: %e\n", error_L2);
-  printf("H1 error: %e\n", error_H1);
-
 
 
   return 0;

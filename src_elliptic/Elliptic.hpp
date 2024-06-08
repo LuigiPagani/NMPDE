@@ -29,13 +29,13 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-//#define NEUMANN
-//#define ROBIN
-//#define CG
-//#define CONVERGENCE
-#define CONSERVATIVE_TRANSPORT_COEFFICIENT
-#define TRANSPORT_COEFFICIENT
-#define REACTION_COEFFICIENT
+#define NEUMANN
+#define ROBIN
+#define CG
+#define CONVERGENCE
+//#define CONSERVATIVE_TRANSPORT_COEFFICIENT
+//#define TRANSPORT_COEFFICIENT
+//#define REACTION_COEFFICIENT
 
 
 using namespace dealii;
@@ -148,7 +148,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return p[0]*p[1]-p[0]-p[1];
+      return M_PI * M_PI*(p[0]*p[0] + p[1]*p[1]) * std::sin(M_PI*p[0]*p[1]);
     }
   };
 
@@ -165,7 +165,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
+      return -1.0;
 
     }
   };
@@ -186,7 +186,7 @@ public:
     value(const Point<dim> & p,
           const unsigned int /*component*/ = 0) const override
     {
-      return p[0]*p[1];
+      return 0.0;
     }
   };
 
@@ -203,17 +203,17 @@ public:
     virtual double
     value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
     {
-      if (p[0] == 0.0)
-      return -1.0;
-      else if (p[0] == 1.0)
-      return std::cos(1.0);
-      else if (p[1] == 0.0)
-      return 2.0 * std::sin(p[0]);
-      else if (p[1] == 1.0)
-      return 0.0;
-      else
-      return 0.0;
-    }
+      if(p[0]==0.0){
+        return -M_PI*p[1];
+      }
+      if(p[0]==1){
+        return -std::sin(M_PI*p[1])+M_PI*p[1]*std::cos(M_PI*p[1]);
+      }
+      if(p[1]==1.0){
+        return -std::sin(M_PI*p[0])+M_PI*p[0]*std::cos(M_PI*p[0]);
+      }
+      return 0;
+    } 
   };
 
 #endif //NEUMANN
@@ -232,7 +232,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return p[0]*p[1];
+      return std::sin(M_PI* p[0] * p[1]);
     }
 
     // Gradient evaluation.
@@ -241,10 +241,10 @@ public:
       Tensor<1, dim> result;
 
       // Gradient with respect to x
-      result[0] = 1.0;
+      result[0] = std::exp(p[0])*(std::exp(p[1])-1.0);
 
       // Gradient with respect to y
-      result[1] = 1.0;
+      result[1] = std::exp(p[1])*(std::exp(p[0])-1.0);
 
       return result;
     }
@@ -348,4 +348,3 @@ protected:
 #endif //NEUMANN
 
 };
-

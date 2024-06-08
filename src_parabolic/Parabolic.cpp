@@ -317,7 +317,7 @@ Parabolic::assemble_rhs(const double &time)
             }
         }
 #ifdef NEUMANN
-function_h.set_time(time);
+
 
       // If the cell is adjacent to the boundary...
       if (cell->at_boundary())
@@ -330,20 +330,21 @@ function_h.set_time(time);
               // If current face lies on the boundary, and its boundary ID (or
               // tag) is that of one of the Neumann boundaries, we assemble the
               // boundary integral.
-              if (cell->face(face_number)->at_boundary() &&
-                  (cell->face(face_number)->boundary_id() == 1) ||
-                  (cell->face(face_number)->boundary_id() == 3))
+              if (cell->face(face_number)->at_boundary())
                 {
                   fe_values_boundary.reinit(cell, face_number);
                   
 
                   for (unsigned int q = 0; q < quadrature_boundary->size(); ++q)
+                  {
+                      function_h.set_time(time);
+                      const double h_new_loc =function_h.value(fe_values_boundary.quadrature_point(q));
+                      function_h.set_time(time-deltat);
+                      const double h_old_loc =function_h.value(fe_values_boundary.quadrature_point(q));
                     for (unsigned int i = 0; i < dofs_per_cell; ++i)
-                      cell_rhs(i) +=
-                        function_h.value(
-                        fe_values_boundary.quadrature_point(q)) * // h(xq)
-                        fe_values_boundary.shape_value(i, q) *      // v(xq)
-                        fe_values_boundary.JxW(q);                  // Jq wq
+                      cell_rhs(i) += (theta * h_new_loc + (1.0 - theta) * h_old_loc) *
+                                  fe_values_boundary.shape_value(i, q) * fe_values_boundary.JxW(q);
+                    }
                 }
             }
         }
@@ -370,10 +371,9 @@ function_h.set_time(time);
     //boundary_functions[0] = &zero_function;
     function_g.set_time(time);
     boundary_functions[0] = &function_g;
+    boundary_functions[1] = &function_g;
     boundary_functions[2] = &function_g;
-
-
-
+    boundary_functions[3] = &function_g;
 
     VectorTools::interpolate_boundary_values(dof_handler,
                                              boundary_functions,
@@ -432,7 +432,6 @@ Parabolic::solve()
     pcout << "Applying the initial condition" << std::endl;
 
     //exact_solution.set_time(time);
-    exact_solution.set_time(time);
     VectorTools::interpolate(dof_handler, u_0, solution_owned);
     solution = solution_owned;
 
@@ -451,7 +450,7 @@ Parabolic::solve()
       pcout << "n = " << std::setw(3) << time_step << ", t = " << std::setw(5)
             << time << ":" << std::flush;
       
-      assemble_matrices(time);
+      //assemble_matrices(time);
       assemble_rhs(time);
       solve_time_step();
       output(time_step);
