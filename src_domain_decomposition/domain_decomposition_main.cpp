@@ -14,7 +14,7 @@ main(int argc, char *argv[])
 
   std::cout << "Setup completed" << std::endl;
 
-  const double       tolerance_increment = 1e-4;
+  const double       tolerance_increment = 1e-8;
   const unsigned int n_max_iter          = 500;
 
   double       solution_increment_norm = tolerance_increment + 1;

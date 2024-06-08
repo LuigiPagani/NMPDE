@@ -34,10 +34,10 @@
 using namespace dealii;
 
 //#define CG
-//#define TRANSPORT_COEFFICIENT
+#define TRANSPORT_COEFFICIENT
 #define REACTION_COEFFICIENT
 #define NEUMANN
-#define ROBIN
+//#define ROBIN
 #define CONSERVATIVE_TRANSPORT_COEFFICIENT
 
 
@@ -70,9 +70,9 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 0.0;
+        return 1.0;
       else
-        return 2.0;
+        return 1.0;
     }
   };
   #endif //TRANSPORT_COEFFICIENT
@@ -97,13 +97,29 @@ public:
           const unsigned int component = 0) const override
     {
       if (component == 0)
-        return 0.0;
+        return 1.0;
       else
-        return 2.0;
+        return 1.0;
     }
   };
 
   #endif //CONSERVATIVE_TRANSPORT_COEFFICIENT
+
+  class FunctionG : public Function<dim>
+  {
+  public:
+    // Constructor.
+    FunctionG()
+    {}
+
+    // Evaluation.
+    virtual double
+    value(const Point<dim> &p,
+          const unsigned int /*component*/ = 0) const override
+    {
+      return p[0];
+    }
+  };
 
 
   // Forcing term.
@@ -119,7 +135,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return 1.0;
+      return p[0]+2.0;
 
     }
   };
@@ -162,9 +178,9 @@ public:
     value(const Point<dim> &p, const unsigned int /*component*/ = 0) const
     {
       if(p[0] ==0.0)
-        return 1.0;
-      if(p[0] ==1.0)
         return -1.0;
+      //if(p[0] ==1.0)
+        //return 1.0;
       else
         return 0.0;
       
@@ -240,6 +256,8 @@ protected:
 
   // ID of current subdomain (0 or 1).
   const unsigned int subdomain_id;
+
+  FunctionG function_g;
 
   #ifdef REACTION_COEFFICIENT
 

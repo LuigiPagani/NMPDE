@@ -13,7 +13,7 @@ Extrude {Lx, 0, 0} { Point{1}; Layers{Round(Lx / h)}; }
 Extrude {0, Ly, 0} { Line{1};  Layers{Round(Ly / h)}; }
 
 // Define the tags.
-Physical Line(0) = {3};
+Physical Line(0) = {3};  
 Physical Line(1) = {4};
 Physical Line(2) = {1};
 Physical Line(3) = {2};
