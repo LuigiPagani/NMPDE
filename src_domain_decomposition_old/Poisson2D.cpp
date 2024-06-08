@@ -159,9 +159,9 @@ Poisson2D::assemble()
            ++face_number)
         {
           // If current face lies on the boundary...
-          if (cell->face(face_number)->at_boundary()&&(
-              (cell->face(face_number)->boundary_id() == 0 && subdomain_id == 0) ||
-              (cell->face(face_number)->boundary_id() == 1 && subdomain_id == 1) ))
+          if (cell->face(face_number)->at_boundary() && (
+            (cell->face(face_number)->boundary_id() == 0 && subdomain_id==0)||
+            (cell->face(face_number)->boundary_id() == 1 && subdomain_id==1)))
             {
               // Functions::ConstantFunction<dim> one_function(1);
               // const Function<dim>* function_h = &one_function;
@@ -207,22 +207,26 @@ Poisson2D::assemble()
   std::map<types::boundary_id, const Function<dim> *> boundary_functions;
 
   // Define boundary functions for each face of each subdomain.
-  Functions::ConstantFunction<dim> zero_function(0);
-  Functions::ConstantFunction<dim> one_function(1);
+  Functions::ConstantFunction<dim> function_bc_0(0);
   Functions::ConstantFunction<dim> function_bc_1(0);
-
+  Functions::ConstantFunction<dim> function_bc_2(1);
+  Functions::ConstantFunction<dim> function_bc_3(0);
+  Functions::ConstantFunction<dim> function_bc_4(0);
+  Functions::ConstantFunction<dim> function_bc_5(0);
+  Functions::ConstantFunction<dim> function_bc_6(1);
+  Functions::ConstantFunction<dim> function_bc_7(0);
 
   // Assign the boundary functions to the faces of the subdomain.
   if (subdomain_id == 0) {
-    //boundary_functions[0] = &function_g; //     Left
-    //boundary_functions[1] = &zero_function; //Right
-    boundary_functions[2] = &function_g; //     Bottom
-    boundary_functions[3] = &function_g; //     Top
+    //boundary_functions[0] = &function_bc_0; // Face 0
+    //boundary_functions[1] = &function_bc_1; // Face 1
+    boundary_functions[2] = &function_bc_2; // Face 2
+    boundary_functions[3] = &function_bc_3; // Face 3
   } else {
-    //boundary_functions[0] = &zero_function; // Left
-    //boundary_functions[1] = &function_g; // Right
-    boundary_functions[2] = &function_g; // Bottom
-    boundary_functions[3] = &function_g; // Top
+    //boundary_functions[0] = &function_bc_4; // Face 0
+    //boundary_functions[1] = &function_bc_5; // Face 1
+    boundary_functions[2] = &function_bc_6; // Face 2
+    boundary_functions[3] = &function_bc_7; // Face 3
   }
 
   // interpolate_boundary_values fills the boundary_values map.
