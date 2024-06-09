@@ -35,6 +35,7 @@
 using namespace dealii;
 
 #define NEUMANN_CONDITION
+//#define AVERAGE_CORRECTION
 
 // Class implementing a solver for the Stokes problem.
 class Stokes

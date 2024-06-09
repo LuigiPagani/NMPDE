@@ -382,12 +382,14 @@ Stokes::solve()
   solution = solution_owned;
 
   // Subtract a constant from the pressure component of the solution
-  // const double pressure_adjustment = 7.7666; // Define the constant to subtract
-  // if (!solution.block(1).locally_owned_elements().is_empty()) {
-  //   for (auto index : solution.block(1).locally_owned_elements()) {
-  //     solution.block(1)[index] -= pressure_adjustment;
-  //   }
-  // }
+  #ifdef AVERAGE_CORRECTION
+  const double pressure_adjustment = 7.7666; // Define the constant to subtract
+  if (!solution.block(1).locally_owned_elements().is_empty()) {
+    for (auto index : solution.block(1).locally_owned_elements()) {
+      solution.block(1)[index] -= pressure_adjustment;
+    }
+  }
+  #endif
 
   solution.compress(VectorOperation::insert); // Ensure changes are consistent across MPI processes
 
